@@ -264,8 +264,8 @@ class Task:
         # if 'app' not in json_data
         c = cls(json_data)
         code, res = await c.check()
-        if code != 0:
-            return  code, res
+        # if code != 0:
+            # return  code, res
         code2, res2 = await c.run()
         return  code + code2, res2 + res
 
