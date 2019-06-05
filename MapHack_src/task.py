@@ -191,6 +191,10 @@ class Task:
                 res = res2 + '\n' + res
         elif op == 'update':
             code, res = await self.check()
+        elif op == 'list':
+            use_app = {k: self.conf['use'][k] for k in self.conf['use'].keys()}
+            return 0, use_app
+
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
@@ -267,9 +271,9 @@ class Task:
             return 2,'must session in data'
         # if 'app' not in json_data
         c = cls(json_data)
-        code, res = await c.check()
+        # code, res = await c.check()
         # if code != 0:
             # return  code, res
-        code2, res2 = await c.run()
-        return  code + code2, res2 + res
+        code, res = await c.run()
+        return  code, res
 
