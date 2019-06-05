@@ -37,7 +37,7 @@ class R:
 
         
         print("Close the client socket")
-        await cc.reply("close")
+        await cc.reply("close", writer)
         writer.close()
 class Data:
     @classmethod
@@ -105,12 +105,14 @@ class Comunication:
         else:
             return 1, 'tag error'
     
-    async def reply(self, reply_msg, **kargs):
+    async def reply(self, reply_msg, writer=None, **kargs):
+        if not writer:
+            writer = self._writer
         data = Data.patch(self.auth_tag, Data.reply(reply_msg, **kargs))
         en_data = self._crypt.encrypt(data)
-        self._writer.write(en_data)
-        self._writer.write_eof()
-        return await self._writer.drain()
+        writer.write(en_data)
+        writer.write_eof()
+        return await writer.drain()
 
     async def recive(self, reader=None):
         if not reader:
