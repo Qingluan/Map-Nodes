@@ -37,7 +37,7 @@ class R:
 
         
         print("Close the client socket")
-        await cc.reply("close", writer)
+        # await cc.reply("close", writer)
         writer.close()
 class Data:
     @classmethod
@@ -111,7 +111,7 @@ class Comunication:
         data = Data.patch(self.auth_tag, Data.reply(reply_msg, **kargs))
         en_data = self._crypt.encrypt(data)
         writer.write(en_data)
-        writer.write_eof()
+        # writer.write_eof()
         return await writer.drain()
 
     async def recive(self, reader=None):
