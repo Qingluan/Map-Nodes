@@ -160,9 +160,9 @@ class Task:
             app = self._data['app']
             date = self._data.get('date')
             if not date:
-                D = datetime.datetime.now()
-            else:
-                D = datetime.date(date.get['year'],date['mon'],date['day'])
+                date = datetime.datetime.now()
+            
+            D = datetime.date(date['year'],date['mon'],date['day'])
             code,res = await self.get_app_log(app, date=D)        
         elif op == 'install':
             app = self._data['app']
