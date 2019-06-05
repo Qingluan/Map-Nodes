@@ -17,6 +17,7 @@ class R:
 
     async def handle_loop(self, reader, writer):
         cc = Comunication(self.conf)
+        await Task.Check()
         while 1:
             if cc.state == AUTH:
                 addr = writer.get_extra_info('peername')

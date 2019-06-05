@@ -44,3 +44,13 @@ def update(sec, name, val):
 
 
 
+def test_ini(f):
+    config = configparser.ConfigParser()
+    config.read(f)
+    a = config.sections()
+    assert 'app' in a
+    assert 'use' in a
+    assert 'base' in a
+    config['base']['task_root']
+    config['app']['ping']
+    config['use']['ping']

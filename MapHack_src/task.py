@@ -3,7 +3,8 @@ import  asyncio
 import  logging
 import  datetime
 import  os
-from MapHack_src.config import  get_local_config, update
+from concurrent.futures.thread import  ThreadPoolExecutor
+from MapHack_src.config import  get_local_config, update, test_ini
 
 async def run_command(*args):
     # Create subprocess
@@ -30,7 +31,10 @@ async def check_cmd(command):
     return  True
 
 class Task:
+
     conf = get_local_config()
+    Pocket = ThreadPoolExecutor(max_workers=12)
+
     def __init__(self, data):
         self._session = data["session"]
         self._data = data
@@ -42,6 +46,11 @@ class Task:
             os.mkdir(root)
         self.root = root
     
+    @classmethod
+    async def Check(cls):
+        c = cls({"session": "test", "app":"ping", "op":'run'})
+        return await c.check()
+
     async def check(self):
         if  not (await check_cmd("apt-get")):
             self._installer = 'yum update -y && yum install -y'
@@ -118,15 +127,28 @@ class Task:
         elif op == 'install':
             app = self._data['app']
             use = self._data['install']
-
             update('app',app,use['app'])
             update('use',app,use['use'])
+        elif op == 'sync-ini':
+            code , res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.test_ini_file, self._data['content'])
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
             res = session + "|" + '\n'.join(res)
 
         return  code, res
+    
+    def test_ini_file(self, content):
+        f = "/tmp/%s" % os.urandom(8).hex() +".ini"
+        with open(f, 'w' ) as fp:
+            fp.write(content)
+        try:
+            test_ini(f)
+            return 0,"ok"
+        except  Exception as e:
+            os.remove(f)
+            return  1,str(e)
+        
     
     @classmethod
     def build_json(cls, app, op='run', year=2019,mon=6,day=5, session=None,  **kargs):
