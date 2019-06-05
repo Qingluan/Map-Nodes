@@ -124,7 +124,7 @@ class Task:
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
-            res = session + "|" + res
+            res = session + "|" + '\n'.join(res)
 
         return  code, res
     
