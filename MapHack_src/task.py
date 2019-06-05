@@ -86,10 +86,13 @@ class Task:
             if not s:
                 # lines = self.conf['app'][app].split("&&")
                 # res = [await run_command(*line.split()) for line in lines]
-                code, res = await run_shell(self.__class__.conf['app'][app])
+                install_str = self.__class__.conf['app'][app]
+                code, res = await run_shell(install_str)
                 # for code, res in res:
                 if code != 0:
                     logging.error("install %s failed" % app)
+                    if app in os.listdir('/tmp/') and 'git' in install_str:
+                        await run_shell("rm -rf /tmp/" + app.strip())
                     return  1, "install %s failed || %s" % (app, res)
         return  0, 'check ok'
 
