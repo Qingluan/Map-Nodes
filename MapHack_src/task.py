@@ -178,7 +178,13 @@ class Task:
             update('use',app,use['use'])
         elif op == 'sync-ini':
             code , res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.test_ini_file, self._data['content'])
-                
+            if code == 0:
+                code2, res2 = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,self.check)
+                code += code2
+                if isinstance(res2, list):
+                    res2 = '\n'.join(res2)
+                res = res2 + '\n' + res
+
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
