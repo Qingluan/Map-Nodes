@@ -20,7 +20,7 @@ async def run_command(*args, stdout=None):
     # Progress
     if process.returncode != 0:
         result = stderr.decode().strip()
-        print('Failed:', args, '(pid = ' + str(process.pid) + ')')
+        # print('Failed:', args, '(pid = ' + str(process.pid) + ')')
     else:
         result = stdout.decode().strip()
     return process.returncode, result

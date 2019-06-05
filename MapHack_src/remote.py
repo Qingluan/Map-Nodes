@@ -37,6 +37,7 @@ class R:
 
         
         print("Close the client socket")
+        await cc.reply("close")
         writer.close()
 class Data:
     @classmethod
