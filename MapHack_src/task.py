@@ -50,7 +50,7 @@ class Task:
             s = await check_cmd(app)
             if not s:
                 lines = self.conf['app'][app].split("&&")
-                res = [await run_command(line.split()) for line in lines]
+                res = [await run_command(*line.split()) for line in lines]
                 for code, res in res:
                     if code != 0:
                         logging.error("install %s failed" % app)
