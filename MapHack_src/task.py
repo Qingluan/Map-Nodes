@@ -180,7 +180,7 @@ class Task:
         elif op == 'sync-ini':
             code , res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.test_ini_file, self._data['content'])
             if code == 0:
-                code2, res2 = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,self.check)
+                code2, res2 = await self.check()
                 code += code2
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
