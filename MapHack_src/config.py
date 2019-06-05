@@ -29,8 +29,8 @@ ping = ping {host} -c 5
 def get_local_config():
 
     config = configparser.ConfigParser()
-    logging.basicConfig(level=getattr(logging,config['base']['level']))
     config.read(PATH)
+    logging.basicConfig(level=getattr(logging,config['base']['level']))
     return  config
 
 def update(sec, name, val):
