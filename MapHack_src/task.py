@@ -175,9 +175,9 @@ class Task:
     @classmethod
     async def from_json(cls, json_data):
         if 'op' not in json_data:
-            return 'must "op" in data'
+            return 1,'must "op" in data'
         if 'session' not in json_data:
-            return 'must session in data'
+            return 2,'must session in data'
         # if 'app' not in json_data
         c = cls(json_data)
         code, res = c.check()
