@@ -27,10 +27,12 @@ async def run_command(*args, stdout=None):
 
 async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
-    if stdout:
-        stderr = stdout + ".err"
-        shell = shell + " >" + stdout + " 2> " + stderr 
+    
     if background:
+        if stdout:
+            stderr = stdout + ".err"
+            shell = shell + " >" + stdout + " 2> " + stderr
+
         shell = "nohup " + shell + " &"
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
