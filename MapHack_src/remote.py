@@ -5,19 +5,21 @@ import struct
 import json
 from MapHack_src.cryptor import  Cryptor
 from MapHack_src.task import  Task
+from MapHack_src.log import  L
+
 AUTH = 0
 CON = 1
 END = 2
 test_conf = {"server":"localhost","server_port":9999, "method":"aes-256-cfb","password":"asdf"}
-logging.basicConfig(level=logging.INFO)
-class R:
 
+class R:
     def __init__(self, conf):
         self.conf = conf
 
     async def handle_loop(self, reader, writer):
         cc = Comunication(self.conf)
-        await Task.Check()
+        code, res = await Task.Check()
+        L(res)
         while 1:
             if cc.state == AUTH:
                 addr = writer.get_extra_info('peername')

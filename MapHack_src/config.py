@@ -9,6 +9,7 @@ else:
     tmp = """
 [base]
 task_root = /tmp/tasks
+level = INFO
 
 [app]
 ping = apt-get install -y iputils-ping
@@ -28,6 +29,7 @@ ping = ping {host} -c 5
 def get_local_config():
 
     config = configparser.ConfigParser()
+    logging.basicConfig(level=getattr(logging,config['base']['level']))
     config.read(PATH)
     return  config
 
@@ -54,3 +56,4 @@ def test_ini(f):
     config['base']['task_root']
     config['app']['ping']
     config['use']['ping']
+    config['base']['level']
