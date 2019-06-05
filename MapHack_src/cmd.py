@@ -34,7 +34,7 @@ def main():
     w = None
     f = args.conf
     with open(f) as fp:
-        w = json.loads(fp)
+        w = json.load(fp)
         assert  'server' in w
         assert  'server_port' in w
         assert  'password' in w
