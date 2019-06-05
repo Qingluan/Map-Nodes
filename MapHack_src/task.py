@@ -129,10 +129,12 @@ class Task:
         log_file = os.path.join(self.root, "-".join([app_name, str(date.year),str(date.month), str(date.day)]) + ".log")
         err_log_file = log_file + ".err"
         log = {}
-        with open(log_file,'rb') as fp:
-            log['log'] = fp.read()
-        with open(err_log_file,'rb') as fp:
-            log['err_log'] = fp.read()
+        if os.path.exists(log_file):
+            with open(log_file,'rb') as fp:
+                log['log'] = fp.read()
+        if os.path.exists(err_log_file):
+            with open(err_log_file,'rb') as fp:
+                log['err_log'] = fp.read()
         return log
     
     async def kill_app(self, app_name):
