@@ -184,7 +184,7 @@ class Task:
             return 2,'must session in data'
         # if 'app' not in json_data
         c = cls(json_data)
-        code, res = c.check()
+        code, res = await c.check()
         if code != 0:
             return  code, res
         return await c.run()
