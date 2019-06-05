@@ -27,7 +27,7 @@ async def run_command(*args, stdout=None):
 async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
     if stdout:
-        stderr = stderr + ".err"
+        stderr = stdout + ".err"
         shell = shell + " >" + stdout + "2> " + stderr 
     if background:
         shell = "nohup " + shell + " &"
@@ -127,8 +127,13 @@ class Task:
         if not date:
             date = datetime.datetime.now()
         log_file = os.path.join(self.root, "-".join([app_name, str(date.year),str(date.month), str(date.day)]) + ".log")
+        err_log_file = log_file + ".err"
+        log = {}
         with open(log_file,'rb') as fp:
-            return  fp.read()
+            log['log'] = fp.read()
+        with open(err_log_file,'rb') as fp:
+            log['err_log'] = fp.read()
+        return log
     
     async def kill_app(self, app_name):
         code, res = await self.Command("ps aux")
