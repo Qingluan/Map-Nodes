@@ -57,3 +57,13 @@ def test_ini(f):
     config['app']['ping']
     config['use']['ping']
     config['base']['level']
+
+    
+    config2 = configparser.ConfigParser()
+    config2.read(PATH)
+    for sec in ['base','app', 'use']:
+        for k in config[sec].keys():
+            config2[sec][k] = config[sec][k]
+    
+    with open(PATH, 'w') as fp:
+        config2.write(fp)

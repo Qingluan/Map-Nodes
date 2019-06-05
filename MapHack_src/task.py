@@ -176,6 +176,7 @@ class Task:
             update('use',app,use['use'])
         elif op == 'sync-ini':
             code , res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.test_ini_file, self._data['content'])
+                
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
@@ -189,7 +190,8 @@ class Task:
             fp.write(content)
         try:
             test_ini(f)
-            return 0,"ok"
+            self.__class__.conf = get_local_config()
+            return 0,"update ini and reload ini file."
         except  Exception as e:
             os.remove(f)
             return  1,str(e)

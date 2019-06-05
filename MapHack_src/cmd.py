@@ -16,6 +16,7 @@ parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
+parser.add_argument("--sync-ini", default=None, action='store_true', help="sync local ini to server.")
 
 def main():
     args = parser.parse_args()
@@ -44,12 +45,20 @@ def main():
     if args.start:
         run_server(w)
     assert  w is not None
+    if args.sync_ini and os.path.exists(args.sync_ini):
+        with open(args.sync_ini) as fp:
+            content = fp.read()
+        data = Task.build_json('', op="sync-ini", session=args.session, content=content)
+        res = Comunication.SendOnce(w, data)
+        L(res[2]['reply'])
+        sys.exit(0)
+
     if args.app:
         app = args.app[0]
         target = args.app[1]
         data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target})
         res = Comunication.SendOnce(w, data)
-        print(res)
+        L(res[2]['reply'])
         sys.exit(0)
 
     if args.test:
