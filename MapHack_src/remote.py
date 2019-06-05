@@ -26,10 +26,12 @@ class R:
                 addr = writer.get_extra_info('peername')
                 logging.info("from %s " % str(addr))
                 code, msg = await cc.auth(reader, writer)
-                print("what:", code)
+                if code != 0:
+                    break
+                L("authed:", code, cc.auth_tag)
             else:
                 code, msg = await cc.trans(reader, writer)
-                print("s:", msg)
+                L("s:", msg)
             if code != 0:
                 break
 
