@@ -14,7 +14,7 @@ setup(name='x-mroy-13',
     packages=find_packages(),
     install_requires=['termcolor'],
     entry_points={
-        'console_scripts': ['Seed-node:MapHack_src.cmd:main']
+        'console_scripts': ['Seed-node=MapHack_src.cmd:main']
     },
 
 )
