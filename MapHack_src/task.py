@@ -106,7 +106,7 @@ class Task:
         if op == 'run':
             app = self._data['app']
             kargs = self._data['kargs']
-            code, res = self.run_app(app, **kargs)
+            code, res = await self.run_app(app, **kargs)
         elif op == 'log':
             app = self._data['app']
             date = self._data('date')

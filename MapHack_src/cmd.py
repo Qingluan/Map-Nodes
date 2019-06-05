@@ -4,6 +4,7 @@ import json
 from MapHack_src.remote import  run_server
 from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
+from MapHack_src.log import L
 
 parser = argparse.ArgumentParser(usage="Manager project, can create git , sync , encrypt your repo")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
@@ -53,7 +54,7 @@ def main():
     if args.test:
         data = Task.build_json("", session=args.session, op="test")
         res = Comunication.SendOnce(w, data)
-        print(res)
+        L(res[2]['reply'])
         sys.exit(0)
 
 
