@@ -45,6 +45,7 @@ def main():
     if args.start:
         run_server(w)
     assert  w is not None
+
     if args.sync_ini and os.path.exists(args.sync_ini):
         with open(args.sync_ini) as fp:
             content = fp.read()
@@ -54,9 +55,13 @@ def main():
         sys.exit(0)
 
     if args.app:
+        if len(args.app) == 1:
+            target = ''
+        else:
+            target = args.app[1]
         app = args.app[0]
-        target = args.app[1]
-        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target})
+        
+        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option})
         res = Comunication.SendOnce(w, data)
         L(res[2]['reply'])
         sys.exit(0)
