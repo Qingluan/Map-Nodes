@@ -6,7 +6,7 @@ import  os
 from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini
 
-async def run_command(*args):
+async def run_command(*args, stdout=None):
     # Create subprocess
     process = await asyncio.create_subprocess_exec(
         *args,
@@ -20,6 +20,29 @@ async def run_command(*args):
     if process.returncode != 0:
         result = stderr.decode().strip()
         print('Failed:', args, '(pid = ' + str(process.pid) + ')')
+    else:
+        result = stdout.decode().strip()
+    return process.returncode, result
+
+async def run_shell(shell, stdout=None, background=False):
+    # Create subprocess
+    if stdout:
+        stderr = stderr + ".err"
+        shell = shell + " >" + stdout + "2> " + stderr 
+    if background:
+        shell = "nohup " + shell + " &"
+    process = await asyncio.create_subprocess_exec(
+        'bash','-c',shell,
+        # stdout must a pipe to be accessible as process.stdout
+        stderr=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE)
+    # Wait for the subprocess to finish
+    stdout, stderr = await process.communicate()
+
+    # Progress
+    if process.returncode != 0:
+        result = stderr.decode().strip()
+        print('Failed:', shell, '(pid = ' + str(process.pid) + ')')
     else:
         result = stdout.decode().strip()
     return process.returncode, result
@@ -66,27 +89,38 @@ class Task:
                         return  1, "install %s failed" % app
         return  0, 'check ok'
 
-    async def Command(self, line):
+    async def Command(self, line, stdout=None):
         lines = [i.split() for i in  line.split("&&")]
         res = []
         code = 0
         for l in lines:
-            c, r = await run_command(*l)
+            c, r = await run_command(*l, stdout=stdout)
             res.append(r)
             code += c
         return  code,res
     
-    async def run_app(self,app_name ,**kwargs):
+    async def run_app(self,app_name, background=False, **kwargs):
         template = 'Not found in apps'
         try:
             template = self.conf['use'][app_name]
             cmd_str = template.format(**kwargs)
             D = datetime.datetime.now()
             log_file = os.path.join(self.root, "-".join([app_name, str(D.year),str(D.month), str(D.day)]) + ".log")
-            code , res = await self.Command("nohup " + cmd_str + " > %s 2>&1 &" % log_file )
+            if not background:
+                try:
+                    code , res = await asyncio.wait_for(run_shell(cmd_str, stdout=log_file), 12)
+                except asyncio.TimeoutError:
+                    code = 2
+                    res1 =  "timeout ... try : use background... but failed"
+                    code , res = await run_shell(cmd_str, stdout=log_file, background=True)
+                    if code != 0:
+                        return code, res1
+            else:
+                code , res = await run_shell(cmd_str, stdout=log_file, background=True)
             return code, res
         except KeyError as e:
             return 1, template + str(e)
+        
     
     
     async def get_app_log(self, app_name, date=None):
@@ -115,7 +149,8 @@ class Task:
         if op == 'run':
             app = self._data['app']
             kargs = self._data['kargs']
-            code, res = await self.run_app(app, **kargs)
+            background = self._data.get("background", False)
+            code, res = await self.run_app(app,background=background,**kargs)
         elif op == 'log':
             app = self._data['app']
             date = self._data('date')
