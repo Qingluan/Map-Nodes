@@ -28,7 +28,7 @@ async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
     if stdout:
         stderr = stdout + ".err"
-        shell = shell + " >" + stdout + "2> " + stderr 
+        shell = shell + " >" + stdout + " 2> " + stderr 
     if background:
         shell = "nohup " + shell + " &"
     process = await asyncio.create_subprocess_exec(
