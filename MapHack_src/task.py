@@ -184,7 +184,8 @@ class Task:
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
-
+        elif op == 'update':
+            code, res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,self.check)
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
