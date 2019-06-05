@@ -6,6 +6,7 @@ import  os
 from base64 import  b64encode, b64decode
 from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini
+from MapHack_src.log import L
 
 async def run_command(*args, stdout=None):
     # Create subprocess
@@ -45,7 +46,7 @@ async def run_shell(shell, stdout=None, background=False):
     # Progress
     if process.returncode != 0:
         result = stderr.decode().strip()
-        print('Failed:', shell, '(pid = ' + str(process.pid) + ')')
+        L("failed:", result)
     else:
         result = stdout.decode().strip()
     return process.returncode, result
@@ -189,7 +190,7 @@ class Task:
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
         elif op == 'update':
-            code, res = await asyncio.gather(self.check())
+            code, res = await self.check()
         elif op == "test":
             session = self._data['session']
             code, res = await self.Command("ifconfig")
