@@ -135,7 +135,9 @@ class Task:
         if os.path.exists(err_log_file):
             with open(err_log_file,'rb') as fp:
                 log['err_log'] = fp.read()
-        return log
+        if not log:
+            return  1, 'no any log for "%s" ' % app_name
+        return 0,log
     
     async def kill_app(self, app_name):
         code, res = await self.Command("ps aux")
