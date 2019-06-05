@@ -266,5 +266,6 @@ class Task:
         code, res = await c.check()
         if code != 0:
             return  code, res
-        return await c.run()
+        code2, res2 = await c.run()
+        return  code + code2, res2 + res
 
