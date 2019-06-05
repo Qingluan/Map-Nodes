@@ -3,6 +3,7 @@ import  asyncio
 import  logging
 import  datetime
 import  os
+from base64 import  b64encode, b64decode
 from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini
 
@@ -131,10 +132,10 @@ class Task:
         log = {}
         if os.path.exists(log_file):
             with open(log_file,'rb') as fp:
-                log['log'] = fp.read()
+                log['log'] = b64encode(fp.read()).decode()
         if os.path.exists(err_log_file):
             with open(err_log_file,'rb') as fp:
-                log['err_log'] = fp.read()
+                log['err_log'] = b64encode(fp.read()).decode()
         if not log:
             return  1, 'no any log for "%s" ' % app_name
         return 0,log

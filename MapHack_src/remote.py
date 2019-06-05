@@ -6,6 +6,7 @@ import json
 from MapHack_src.cryptor import  Cryptor
 from MapHack_src.task import  Task
 from MapHack_src.log import  L
+from base64 import  b64encode, b64decode
 
 AUTH = 0
 CON = 1
@@ -171,8 +172,11 @@ async def test_con(conf, msg,loop):
     
     con, R, W = await Comunication.Con(conf, loop=loop)
     await con.reply("msg", **msg)
-    res = await con.recive()
-    return res
+    code, t, data = await con.recive()
+    if 'log' in data['reply']:
+        data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
+        data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
+    return code, t, data
 
 def test(conf):
     loop = asyncio.get_event_loop()
