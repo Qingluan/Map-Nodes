@@ -98,8 +98,8 @@ class Comunication:
         else:
             return 1, 'tag error'
     
-    async def reply(self, reply_msg):
-        data = Data.patch(self.auth_tag, Data.reply(reply_msg))
+    async def reply(self, reply_msg, **kargs):
+        data = Data.patch(self.auth_tag, Data.reply(reply_msg, **kargs))
         en_data = self._crypt.encrypt(data)
         self._writer.write(en_data)
         self._writer.write_eof()
@@ -118,11 +118,11 @@ class Comunication:
         return  code, t, json.loads(data.decode())
 
     async def handle_data(self, data):
-        try:
-            code, res = await Task.from_json(data)
-            return  res
-        except  Exception as e:
-            return str(e)
+        # try:
+        code, res = await Task.from_json(data)
+        return  res
+        # except  Exception as e:
+            # return str(e)
         
 
     @classmethod
@@ -167,7 +167,7 @@ def run_server(conf):
 async def test_con(conf, msg,loop):
     
     con, R, W = await Comunication.Con(conf, loop=loop)
-    await con.reply("msg",**msg)
+    await con.reply("msg", **msg)
     res = await con.recive()
     return res
 
