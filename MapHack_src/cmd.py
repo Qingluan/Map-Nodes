@@ -11,6 +11,7 @@ parser.add_argument("-c","--conf", help="use config json  file ,format like ss."
 parser.add_argument("-s","--start", default=False, action='store_true', help="start server")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
+parser.add_argument("--op", default='run', help="set args run/install/log/test")
 parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
@@ -46,7 +47,7 @@ def main():
     if args.app:
         app = args.app[0]
         target = args.app[1]
-        data = Task.build_json(app, session=args.session, **{getattr(args,'as'): target})
+        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target})
         res = Comunication.SendOnce(w, data)
         print(res)
         sys.exit(0)

@@ -158,7 +158,7 @@ class Task:
             code, res = await self.run_app(app,background=background,**kargs)
         elif op == 'log':
             app = self._data['app']
-            date = self._data('date')
+            date = self._data.get('date')
             if not date:
                 D = datetime.datetime.now()
             else:
