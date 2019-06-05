@@ -80,7 +80,7 @@ class Task:
 
     async def check(self):
         if  not (await check_cmd("apt-get")):
-            self._installer = 'yum update -y && yum install -y'
+            self._installer = 'yum'
         apps = list(self.conf['app'].keys())
         for app in apps:
             s = await check_cmd(app)
@@ -88,6 +88,9 @@ class Task:
                 # lines = self.conf['app'][app].split("&&")
                 # res = [await run_command(*line.split()) for line in lines]
                 install_str = self.__class__.conf['app'][app]
+                if self._installer == 'yum':
+                    install_str = install_str.replace("apt-get", self._installer)
+
                 code, res = await run_shell(install_str)
                 # for code, res in res:
                 if code != 0:
@@ -199,6 +202,12 @@ class Task:
             session = self._data['session']
             code, res = await self.Command("ifconfig")
             res = session + "|" + '\n'.join(res)
+        
+        elif op == 'exec':
+            session = self._data['session']
+            app = self._data['app']
+            code, res = await run_shell(app)
+
 
         return  code, res
     
