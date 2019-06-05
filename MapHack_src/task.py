@@ -90,7 +90,7 @@ class Task:
                 # for code, res in res:
                 if code != 0:
                     logging.error("install %s failed" % app)
-                    return  1, "install %s failed" % app
+                    return  1, "install %s failed || %s" % (app, res)
         return  0, 'check ok'
 
     async def Command(self, line, stdout=None):
