@@ -177,11 +177,14 @@ async def test_con(conf, msg,loop):
     
     con, R, W = await Comunication.Con(conf, loop=loop)
     await con.reply("msg", **msg)
-    code, t, data = await con.recive()
-    if 'log' in data['reply']:
-        data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
-        data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
-    return code, t, data
+    try:
+        code, t, data = await asyncio.wait_for(con.recive(), 12)
+        if 'log' in data['reply']:
+            data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
+            data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
+        return code, t, data
+    except asyncio.TimeoutError:
+        return 1, '', 'Timeout'
 
 def test(conf):
     loop = asyncio.get_event_loop()

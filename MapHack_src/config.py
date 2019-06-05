@@ -9,19 +9,21 @@ else:
     tmp = """
 [base]
 task_root = /tmp/tasks
-level = INFO
+level = ERROR
 
 [app]
 ping = apt-get install -y iputils-ping
 nmap = apt-get install -y nmap
 sqlmap = pip3 install sqlmap
 dirsearch = git clone https://github.com/maurosoria/dirsearch.git /opt/dirsearch  && ln -s /opt/dirsearch/dirsearch.py /usr/local/bin/dirsearch
+masscan = apt-get -y install git gcc make libpcap-dev && cd /tmp/ &&  git clone https://github.com/robertdavidgraham/masscan  && cd masscan && make && make install
 
 [use]
 nmap = nmap -sS -A {ip} {option}
-dirsearch = dirsearch -h {host} -e {option}
-sqlmap = sqlmap -t {host} --dbs  {option}
-ping = ping {host} -c 5
+dirsearch = dirsearch -h {ip} -e {option}
+sqlmap = sqlmap -t {ip} --dbs  {option}
+ping = ping {ip} -c 5
+masscan = masscan {ip}  -p22-10000  --banners --rate 1000
 """
     with open(PATH, 'w') as fp:
         fp.write(tmp)
