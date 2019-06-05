@@ -83,7 +83,7 @@ class Task:
             cmd_str = template.format(**kwargs)
             D = datetime.datetime.now()
             log_file = os.path.join(self.root, "-".join([app_name, str(D.year),str(D.month), str(D.day)]) + ".log")
-            code , res = await self.Command("nohup " + cmd_str + " > %s 2>&1" % log_file )
+            code , res = await self.Command("nohup " + cmd_str + " > %s 2>&1 &" % log_file )
             return code, res
         except KeyError as e:
             return 1, template + str(e)
