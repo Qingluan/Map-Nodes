@@ -6,7 +6,7 @@ from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
 from MapHack_src.log import L
 
-parser = argparse.ArgumentParser(usage="Manager project, can create git , sync , encrypt your repo")
+parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
 parser.add_argument("-s","--start", default=False, action='store_true', help="start server")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
