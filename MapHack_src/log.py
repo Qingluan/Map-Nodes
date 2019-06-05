@@ -13,5 +13,5 @@ def L(*args):
             l.append("\n")
             l += i
         else:
-            l.append(i)
+            l.append(str(i))
     print(colored('[+]','green', attrs=['bold']),colored(' '.join(l), 'blue'))
