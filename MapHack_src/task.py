@@ -36,6 +36,8 @@ class Task:
         self._data = data
         self._installer = 'apt-get update -y && apt-get install -y '
         root = os.path.join(self.conf['base']['task_root'], data['session'])
+        if not os.path.exists(self.conf['base']['task_root']):
+            os.mkdir(self.conf['base']['task_root'])
         if not os.path.exists(root):
             os.mkdir(root)
         self.root = root
