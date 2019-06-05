@@ -161,12 +161,14 @@ class Task:
             assert  'app' in kargs
             D = {
                 'op':'install',
+                'session':session,
                 'app':app,
                 'install':kargs
             }
         else:
             D = {
                 'op':op,
+                'session':session,
                 'kargs':kargs
             }
             D.update(kargs)
