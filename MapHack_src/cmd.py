@@ -1,4 +1,4 @@
-import sys
+import sys,os
 import argparse
 import json
 from MapHack_src.remote import  run_server
@@ -13,10 +13,24 @@ parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
-
+parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
 
 def main():
     args = parser.parse_args()
+
+    if args.generate_sec_conf:
+        d = {}
+        ip = [i.strip() for i in os.popen("ifconfig").read().split("\n") if 'inet' in i and '127.0.0.1' not in i and '::' not in i][0].split()[1]
+        print("server ip: %s" % ip)
+        for k in ['server_port','password', 'method']:
+            v = input(k)
+            if not v:
+                raise Exception("%s : must a val"% k)
+            d[k] = v
+        d['server'] = ip
+        with open("seed-node-server.json", "w") as fp:
+            json.dump(d, fp)
+        sys.exit(0)
     w = None
     f = args.conf
     with open(f) as fp:
