@@ -46,7 +46,7 @@ def load_library(path, search_symbol, library_name):
     try:
         lib = CDLL(path)
         if hasattr(lib, search_symbol):
-            logging.info('loading %s from %s', library_name, path)
+            logging.debug('loading %s from %s', library_name, path)
             return lib
         else:
             logging.warn('can\'t find symbol %s in %s', search_symbol,

@@ -1,9 +1,11 @@
 import logging
 from termcolor import colored
+from MapHack_src.config import get_local_config
 
 
+init_config = get_local_config()
 
-def L(*args):
+def L(*args, log=False):
     l = []
     for i in args:
         if isinstance(i, dict):
@@ -17,4 +19,8 @@ def L(*args):
             l += i
         else:
             l.append(str(i))
-    print(colored('[+]','green', attrs=['bold']),colored(' '.join(l), 'blue'))
+    if log:
+        print(colored('[+]','green', attrs=['bold']),colored(' '.join(l), 'blue'))
+    else:
+        logging.info(colored('\n[+]','green', attrs=['bold']) + " " + colored(' '.join(l), 'blue'))
+

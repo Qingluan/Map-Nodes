@@ -24,7 +24,7 @@ class R:
         while 1:
             if cc.state == AUTH:
                 addr = writer.get_extra_info('peername')
-                logging.info("from %s " % str(addr))
+                logging.debug("from %s " % str(addr))
                 code, msg = await cc.auth(reader, writer)
                 if code != 0:
                     break
@@ -84,8 +84,8 @@ class Comunication:
             s_tag = self.s_tag
             writer.write(s_tag)
             await writer.drain()
-        logging.info(c_tag)
-        logging.info(s_tag)
+        logging.debug(c_tag)
+        logging.debug(s_tag)
         self.auth_tag = s_tag + c_tag
         if len(self.auth_tag) == 16:
             self.state = CON
@@ -95,7 +95,7 @@ class Comunication:
         return  1, b'shit'
     
     async def trans(self, reader, writer):
-        logging.info("wait")
+        logging.debug("wait")
         code, t, data = await self.recive(reader)
         if code == 0 and t == self.auth_tag:
             reply_msg = await self.handle_data(data)
@@ -122,7 +122,7 @@ class Comunication:
             return  1, None, None
         de = self._crypt.decrypt(data)
         code,t,data = Data.unpatch(de)
-        logging.info("R:%s" % data)
+        logging.debug("R:%s" % data)
         return  code, t, json.loads(data.decode())
 
     async def handle_data(self, data):
