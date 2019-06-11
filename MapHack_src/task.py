@@ -79,6 +79,7 @@ class Task:
         return await c.check()
 
     async def check(self):
+        res = 'use apt '
         if  not (await check_cmd("apt-get")):
             self._installer = 'yum'
             L("may be centos , use : yum")
