@@ -1,6 +1,8 @@
 import sys,os
 import argparse
 import json
+import sys, tempfile, os
+from subprocess import call
 from MapHack_src.remote import  run_server
 from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
@@ -20,6 +22,19 @@ parser.add_argument("-T","--test", default=False, action='store_true', help="tes
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
 parser.add_argument("--push-ini", default=None,  help="sync local ini to server.")
 parser.add_argument("--vi-ini", default=False,action='store_true',  help="change ini file in server.")
+
+def editor(content):
+    EDITOR = os.environ.get('EDITOR','vim') #that easy!
+    with tempfile.NamedTemporaryFile(suffix=".tmp") as tf:
+        tf.write(content.encode())
+        tf.flush()
+        call([EDITOR, tf.name])
+
+  # do the parsing with `tf` using regular File operations.
+  # for instance:
+        tf.seek(0)
+        edited_message = tf.read()
+        return edited_message.decode()
 
 def main():
     args = parser.parse_args()
@@ -58,17 +73,13 @@ def main():
         sys.exit(0)
 
     if args.vi_ini:
-        data = Task.build_json(app, op='get-ini', session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background, 'date': args.time})
+        data = Task.build_json('', op='get-ini', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
-        with open("/tmp/tmp.ini", "w") as fp:
-            fp.write(res[2]['reply'])
-        if os.path.exists("/tmp/tmp.ini"):
-            os.popen('vi /tmp/tmp.ini').read()
-            with open('/tmp/tmp.ini') as fp:
-                content = fp.read()
-                data = Task.build_json('', op="sync-ini", session=args.session, content=content)
-                res = Comunication.SendOnce(w, data)
-                L(res[2]['reply'])
+        L(res[2]['reply'])
+        content = editor(res[2]['reply'])
+        data = Task.build_json('', op="sync-ini", session=args.session, content=content)
+        res = Comunication.SendOnce(w, data)
+        L(res[2]['reply'])
         if os.path.exists("/tmp/tmp.ini"):
             os.remove('/tmp/tmp.ini')
         sys.exit(0)
@@ -90,6 +101,18 @@ def main():
         except Exception as e:
             L(res[2])
             sys.exit(1)
+
+    if args.op != 'run':
+        app = 'other'
+        data = Task.build_json(app,op=args.op, session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
+        res = Comunication.SendOnce(w, data)
+        try:
+            L(res[2]['reply'])
+            sys.exit(0)
+        except Exception as e:
+            L(res[2])
+            sys.exit(1)
+
 
     if args.test:
         data = Task.build_json("", session=args.session, op="test")

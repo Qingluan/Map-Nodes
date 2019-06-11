@@ -81,6 +81,8 @@ class Task:
     async def check(self):
         if  not (await check_cmd("apt-get")):
             self._installer = 'yum'
+            L("may be centos , use : yum")
+            res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
         for app in apps:
             s = await check_cmd(app)
@@ -91,14 +93,15 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                code, res = await run_shell(install_str)
+                code, res2 = await run_shell(install_str)
+                res += res2
                 # for code, res in res:
                 if code != 0:
                     logging.error("install %s failed" % app)
                     if app in os.listdir('/tmp/') and 'git' in install_str:
                         await run_shell("rm -rf /tmp/" + app.strip())
-                    return  1, "install %s failed || %s" % (app, res)
-        return  0, 'check ok'
+                    return  1, res + "\ninstall %s failed || %s" % (app, res)
+        return  0, res + '\ncheck ok'
 
     async def Command(self, line, stdout=None):
         lines = [i.split() for i in  line.split("&&")]
