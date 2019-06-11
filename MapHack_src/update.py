@@ -31,7 +31,7 @@ def update(port):
 
 
 def update_and_start(port): 
-    o = multiprocessing.Process(target=update, args=(os.getpid(),port, ))
+    o = multiprocessing.Process(target=update, args=(port, ))
     o.start()
     
 
