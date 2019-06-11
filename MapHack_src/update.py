@@ -4,10 +4,11 @@ import time
 from MapHack_src.config import get_local_config
 from MapHack_src.log import L
 from subprocess import call
+from MapHack_src.daemon import daemon_start
 
 config = get_local_config()
 
-def update(pid, port):
+def update(port):
     for i in range(3):
         time.sleep(1)
         L('%d sec start update' % (3 -i))
@@ -30,6 +31,7 @@ def update(pid, port):
 
 
 def update_and_start(port): 
+    daemon_start(pid_file='/tmp/updating.pid')
     o = multiprocessing.Process(target=update, args=(os.getpid(),port, ))
     o.start()
     

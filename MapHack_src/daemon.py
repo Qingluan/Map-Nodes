@@ -157,7 +157,7 @@ def daemon_stop(pid_file):
     pid = int(pid)
     if pid > 0:
         try:
-            os.kill(pid, signal.SIGKILL)
+            os.kill(pid, signal.SIGTERM)
         except OSError as e:
             if e.errno == errno.ESRCH:
                 logging.error('not running')
