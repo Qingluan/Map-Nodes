@@ -9,7 +9,8 @@ else:
     tmp = """
 [base]
 task_root = /tmp/tasks
-level = ERROR
+level = INFO
+restart = /usr/local/bin/Seed-node -s -c /root/Map-Nodes/config.json
 
 [app]
 ping = apt-get install -y iputils-ping
