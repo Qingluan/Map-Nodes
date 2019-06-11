@@ -3,6 +3,7 @@ import os, signal
 import time
 from MapHack_src.config import get_local_config
 from MapHack_src.log import L
+from subprocess import call
 
 config = get_local_config()
 
@@ -18,11 +19,12 @@ def update(pid, port):
 
     os.kill(pid, signal.SIGKILL)
     try:
-        res = os.popen('lsof -t -i tcp:%d | xargs kill -9' % port).read()
+        #res = os.popen('lsof -t -i tcp:%d | xargs kill -9' % port).read()
+        res = call("Seed-node" ,"--stop")
         L("kill process")
         L('restart node in 2 sec' )
         time.sleep(2)
-        res = os.popen(config['base']['restart']).read()
+        res = call(config['base']['restart'].split())
     except Exception as e:
         pass
     t = 5

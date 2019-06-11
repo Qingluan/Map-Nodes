@@ -28,7 +28,7 @@ from MapHack_src.log import L
 # this module is ported from ShadowVPN daemon.c
 
 
-def daemon_exec(command='start', pid_file='/var/run/node.pid', log_file='/var/log/hack.log'):
+def daemon_exec(command='start', pid_file='/var/run/hack.pid', log_file='/var/log/hack.log'):
     if os.name != 'posix':
         raise Exception('daemon mode is only supported on Unix')
     if not command:

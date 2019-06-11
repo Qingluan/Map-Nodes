@@ -12,6 +12,7 @@ from MapHack_src.daemon import daemon_exec
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
 parser.add_argument("-s","--start", default=False, action='store_true', help="start server")
+parser.add_argument("--stop", default=False, action='store_true', help="stop server")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("--time", default='', help="set time to queyr exm: '2019-9-18'")
@@ -63,6 +64,9 @@ def main():
         assert  'method' in w
     if args.start:
         daemon_exec()
+        run_server(w)
+    if args.stop:
+        daemon_exec(command='stop')
         run_server(w)
     assert  w is not None
 
