@@ -6,9 +6,10 @@ from MapHack_src.log import L
 from subprocess import call
 from MapHack_src.daemon import daemon_exec
 
-config = get_local_config()
 
+config = get_local_config()
 def update(port):
+    config = get_local_config()
     for i in range(3):
         time.sleep(1)
         L('%d sec start update' % (3 -i))
