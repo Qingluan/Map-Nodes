@@ -31,7 +31,6 @@ def update(port):
 
 
 def update_and_start(port): 
-    daemon_exec(pid_file='/tmp/updating.pid')
     o = multiprocessing.Process(target=update, args=(os.getpid(),port, ))
     o.start()
     
