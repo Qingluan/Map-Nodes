@@ -45,6 +45,18 @@ def daemon_exec(command='start', pid_file='/var/run/node.pid', log_file='/var/lo
     else:
         raise Exception('unsupported daemon command %s' % command)
 
+def to_bytes(s):
+    if bytes != str:
+        if type(s) == str:
+            return s.encode('utf-8')
+    return s
+
+
+def to_str(s):
+    if bytes != str:
+        if type(s) == bytes:
+            return s.decode('utf-8')
+    return s
 
 def write_pid_file(pid_file, pid):
     import fcntl
@@ -68,13 +80,13 @@ def write_pid_file(pid_file, pid):
     except IOError:
         r = os.read(fd, 32)
         if r:
-            logging.error('already started at pid %s' % str(r))
+            logging.error('already started at pid %s' % to_str(r))
         else:
             logging.error('already started')
         os.close(fd)
         return -1
     os.ftruncate(fd, 0)
-    os.write(fd, bytes(str(pid)))
+    os.write(fd, to_bytes(to_str(pid)))
     return 0
 
 
@@ -132,7 +144,7 @@ def daemon_stop(pid_file):
     try:
         with open(pid_file) as f:
             buf = f.read()
-            pid = str(buf)
+            pid = to_str(buf)
             if not buf:
                 logging.error('not running')
     except IOError as e:
