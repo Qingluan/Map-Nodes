@@ -173,10 +173,10 @@ class Task:
     
     async def run(self):
         op = self._data['op']
+        L(self._data)
         if op == 'run':
             app = self._data['app']
             kargs = self._data['kargs']
-            L(self._data)
             code, res = await self.run_app(app,**kargs)
         elif op == 'log':
             app = self._data['app']
@@ -205,7 +205,6 @@ class Task:
         elif op == 'update':
             code, res = await self.check()
         elif op == 'list':
-            L(self._data)
             session = self._data['session']
             app = self._data.get('app','')
             log_dir = self.root
