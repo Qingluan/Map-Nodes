@@ -18,7 +18,8 @@ parser.add_argument("-S","--session", default='default', help="set option defaul
 parser.add_argument("-B","--not-background", default=True, action='store_false', help="send task not in background")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
-parser.add_argument("--sync-ini", default=None,  help="sync local ini to server.")
+parser.add_argument("--push-ini", default=None,  help="sync local ini to server.")
+parser.add_argument("--vi-ini", default=False,action='store_true',  help="change ini file in server.")
 
 def main():
     args = parser.parse_args()
@@ -48,13 +49,31 @@ def main():
         run_server(w)
     assert  w is not None
 
-    if args.sync_ini and os.path.exists(args.sync_ini):
+    if args.push_ini and os.path.exists(args.push_ini):
         with open(args.sync_ini) as fp:
             content = fp.read()
         data = Task.build_json('', op="sync-ini", session=args.session, content=content)
         res = Comunication.SendOnce(w, data)
         L(res[2]['reply'])
         sys.exit(0)
+
+    if args.vi_ini:
+        data = Task.build_json(app, op='get-ini', session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background, 'date': args.time})
+        res = Comunication.SendOnce(w, data)
+        with open("/tmp/tmp.ini", "w") as fp:
+            fp.write(res[2]['reply'])
+        if os.path.exists("/tmp/tmp.ini"):
+            os.popen('vi /tmp/tmp.ini').read()
+            with open('/tmp/tmp.ini') as fp:
+                content = fp.read()
+                data = Task.build_json('', op="sync-ini", session=args.session, content=content)
+                res = Comunication.SendOnce(w, data)
+                L(res[2]['reply'])
+        if os.path.exists("/tmp/tmp.ini"):
+            os.remove('/tmp/tmp.ini')
+        sys.exit(0)
+
+
 
     if args.app:
         if len(args.app) == 1:

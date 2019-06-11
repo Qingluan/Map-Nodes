@@ -69,3 +69,8 @@ def test_ini(f):
     
     with open(PATH, 'w') as fp:
         config2.write(fp)
+
+def get_init():
+    with open(PATH, 'r') as fp:
+        return fp.read()
+

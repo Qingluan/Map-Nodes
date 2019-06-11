@@ -5,7 +5,7 @@ import  datetime
 import  os
 from base64 import  b64encode, b64decode
 from concurrent.futures.thread import  ThreadPoolExecutor
-from MapHack_src.config import  get_local_config, update, test_ini
+from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 
 async def run_command(*args, stdout=None):
@@ -194,6 +194,10 @@ class Task:
             use = self._data['install']
             update('app',app,use['app'])
             update('use',app,use['use'])
+        elif op == 'get-ini':
+            content = get_ini()
+            code = 0
+            res = content
         elif op == 'sync-ini':
             code , res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.test_ini_file, self._data['content'])
             if code == 0:
@@ -263,6 +267,7 @@ class Task:
                 'kargs':kargs
             }
         elif op == 'log':
+            d = kargs.get('date')
             D = {
                 'op':'log',
                 'app':app,
@@ -273,6 +278,8 @@ class Task:
                     'day':day
                 }
             }
+            if d:
+                D['date'] = d
         elif op == 'install':
             assert  'use' in kargs
             assert  'app' in kargs
