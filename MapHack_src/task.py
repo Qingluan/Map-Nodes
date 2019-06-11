@@ -8,6 +8,7 @@ from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
+from MapHack_src.remote import Comunication
 
 async def run_command(*args, stdout=None):
     # Create subprocess
