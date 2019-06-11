@@ -17,7 +17,10 @@ def update(pid):
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
 
     os.kill(pid, signal.SIGKILL)
-    res = os.popen(config['base']['restart']).read()
+    try:
+        res = os.popen(config['base']['restart']).read()
+    except OSError as e:
+        res = str(e)
     t = 5
     while 1:
         if t == 0:break
