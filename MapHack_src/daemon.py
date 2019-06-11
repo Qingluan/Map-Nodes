@@ -33,8 +33,6 @@ def daemon_exec(command='start', pid_file='/var/run/node.pid', log_file='/var/lo
         raise Exception('daemon mode is only supported on Unix')
     if not command:
         command = 'start'
-    pid_file = config['pid-file']
-    log_file = config['log-file']
     if command == 'start':
         daemon_start(pid_file, log_file)
     elif command == 'stop':
