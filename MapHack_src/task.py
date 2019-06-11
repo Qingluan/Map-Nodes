@@ -150,7 +150,7 @@ class Task:
         
     
     
-    async def get_app_log(self, app_name, date=None):
+    async def get_app_log(self, app_name, date=None, line=50):
         if not date:
             date = datetime.datetime.now()
         if not isinstance(date, str):
@@ -161,11 +161,13 @@ class Task:
         err_log_file = log_file + ".err"
         log = {}
         if os.path.exists(log_file):
-            with open(log_file,'rb') as fp:
-                log['log'] = b64encode(fp.read()).decode()
+            #with open(log_file,'rb') as fp:
+            #    log['log'] = b64encode(fp.read()).decode()
+            log['log'] = b64decode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode())
         if os.path.exists(err_log_file):
-            with open(err_log_file,'rb') as fp:
-                log['err_log'] = b64encode(fp.read()).decode()
+            #with open(err_log_file,'rb') as fp:
+            #    log['err_log'] = b64encode(fp.read()).decode()
+            log['err_log'] = b64decode((await run_shell("tail -n %d %s " % (line,err_log_file) ))[1].encode())
         if not log:
             return  1, 'no any log for "%s" in %s ' % (app_name, log_file)
         return 0,log
@@ -278,7 +280,7 @@ class Task:
         
     
     @classmethod
-    def build_json(cls, app, op='run', year=2019,mon=6,day=5, session=None,  **kargs):
+    def build_json(cls, app, op='run', year=None,mon=None,day=None, session=None,  **kargs):
         """
         @op :  run/log/install/test
         @kargs: 
@@ -286,6 +288,11 @@ class Task:
             like: ip="192.168.1.1"   for @app=nmap  
             like: host="https://test.ip/sdome.php?id=1" option='-D user --tables' for @app=sqlmap
         """
+        if not year:
+            dd = datetime.datetime.now()
+            year = dd.year
+            mon = dd.month
+            day = dd.day
         if not session:
             session = os.urandom(8).hex()
 
