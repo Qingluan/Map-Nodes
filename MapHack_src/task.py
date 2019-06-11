@@ -140,7 +140,11 @@ class Task:
     async def get_app_log(self, app_name, date=None):
         if not date:
             date = datetime.datetime.now()
-        log_file = os.path.join(self.root, "-".join([app_name, str(date.year),str(date.month), str(date.day)]) + ".log")
+        if not isinstance(date, str):
+            log_file = os.path.join(self.root, "-".join([app_name, str(date.year),str(date.month), str(date.day)]) + ".log")
+        else:
+            log_file = os.path.join(self.root, app_name + "-%s" % date + ".log")
+
         err_log_file = log_file + ".err"
         log = {}
         if os.path.exists(log_file):
@@ -179,8 +183,11 @@ class Task:
             date = self._data.get('date')
             if not date:
                 date = datetime.datetime.now()
-            
-            D = datetime.date(date['year'],date['mon'],date['day'])
+
+            if isinstance(date, dict):
+                D = datetime.date(date['year'],date['mon'],date['day'])
+            else:
+                D = date
             code,res = await self.get_app_log(app, date=D)        
         elif op == 'install':
             app = self._data['app']
@@ -198,7 +205,17 @@ class Task:
         elif op == 'update':
             code, res = await self.check()
         elif op == 'list':
+            session = self._data.get['session']
+            app = self._data.get('app','')
+            if app :
+                use_app['log_list'] = {}
+            log_dir = os.path.join(self.root, session)
             use_app = {k: self.conf['use'][k] for k in self.conf['use'].keys()}
+            if app:
+                for log in os.listdir(log_dir):
+                    if log.startswith(app):
+                        use_app['log_list'][app] = log
+
             return 0, use_app
 
         elif op == "test":

@@ -11,6 +11,7 @@ parser.add_argument("-c","--conf", help="use config json  file ,format like ss."
 parser.add_argument("-s","--start", default=False, action='store_true', help="start server")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
+parser.add_argument("--time", default='', help="set time to queyr exm: '2019-9-18'")
 parser.add_argument("--op", default='run', help="set args run/install/log/test")
 parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
@@ -62,7 +63,7 @@ def main():
             target = args.app[1]
         app = args.app[0]
         
-        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background})
+        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])
