@@ -20,7 +20,7 @@ def update(pid):
     try:
         res = os.popen(config['base']['restart']).read()
     except OSError as e:
-        res = str(e)
+        pass
     t = 5
     while 1:
         if t == 0:break
@@ -28,7 +28,10 @@ def update(pid):
             os.kill(pid, signal.SIGKILL)
             L('%d sec retry update' % 3 )
             time.sleep(3)
-            res = os.popen(config['base']['restart']).read()
+            try:
+                res = os.popen(config['base']['restart']).read()
+            except OSError as e:
+                pass
         else:
             break
         t -= 1
