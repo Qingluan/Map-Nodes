@@ -23,7 +23,7 @@ def update(pid):
 
 def update_and_start():
     
-    o = multiprocessing.Process(target=update, os.getpid())
+    o = multiprocessing.Process(target=update, args=(os.getpid(),))
     o.start()
     
 
