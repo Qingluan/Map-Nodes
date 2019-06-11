@@ -53,7 +53,7 @@ async def run_shell(shell, stdout=None, background=False):
 
 async def check_cmd(command):
     code, res = await run_command("which", command)
-    if not res:
+    if not res or code != 0:
         return False
     return  True
 
