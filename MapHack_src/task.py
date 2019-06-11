@@ -36,6 +36,7 @@ async def run_shell(shell, stdout=None, background=False):
             shell = shell + " >" + stdout + " 2> " + stderr
 
         shell = "nohup " + shell + " &"
+        result = 'run in background: %s ' % stdout
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
         # stdout must a pipe to be accessible as process.stdout
@@ -68,8 +69,9 @@ class Task:
         self._data = data
         self.Sender = sender
         self._installer = 'apt-get update -y && apt-get install -y '
-        if not os.path.exists(os.path.join(self.conf['base']['task_root'],'config')):
-            os.mkdir(os.path.join(self.conf['base']['task_root'], 'config'))
+        self.root_config = os.path.join(self.conf['base']['task_root'],'config')
+        if not os.path.exists(self.root_config):
+            os.mkdir(self.root_config)
         root = os.path.join(self.conf['base']['task_root'], data['session'])
         if not os.path.exists(self.conf['base']['task_root']):
             os.mkdir(self.conf['base']['task_root'])
@@ -99,7 +101,8 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                code, res2 = await run_shell(install_str, background=True, stdout='/tmp/tasks/config/install.log')
+                log_file = os.path.join(self.root_config, app) + ".log"
+                code, res2 = await run_shell(install_str, background=True, stdout=log_file)
                 res += res2
                 # for code, res in res:
                 if code != 0:
@@ -200,9 +203,13 @@ class Task:
             code,res = await self.get_app_log(app, date=D)        
         elif op == 'install':
             app = self._data['app']
-            use = self._data['install']
-            update('app',app,use['app'])
-            update('use',app,use['use'])
+            try:
+                install_str = self.conf['app'][app]
+                log_file = os.path.join(self.root_config, app) + ".log"
+                code, res = await run_shell(install_str, background=True, stdout=log_file)
+            except Exception as e:
+                code = 1
+                res = str(e)
         elif op == 'get-ini':
             content = get_ini()
             code = 0
@@ -302,7 +309,6 @@ class Task:
             if d:
                 D['date'] = d
         elif op == 'install':
-            assert  'use' in kargs
             assert  'app' in kargs
             D = {
                 'op':'install',
