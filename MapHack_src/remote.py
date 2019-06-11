@@ -128,7 +128,7 @@ class Comunication:
 
     async def handle_data(self, data):
         # try:
-        code, res = await Task.from_json(data, conf=self._conf, sender=Comunication.SendOnce)
+        code, res = await Task.from_json(data, conf=self._conf, sender=self.sendone)
         return  res
         # except  Exception as e:
             # return str(e)
@@ -153,6 +153,9 @@ class Comunication:
         if not loop:
             loop = asyncio.get_event_loop()
         return loop.run_until_complete(test_con(conf, msg, loop))
+
+    async def sendone(self, conf, msg, loop):
+        return await test_con(conf, msg, loop) 
     
 
 
