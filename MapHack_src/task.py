@@ -205,6 +205,7 @@ class Task:
         elif op == 'update':
             code, res = await self.check()
         elif op == 'list':
+            L(self._data)
             session = self._data['session']
             app = self._data.get('app','')
             if app :
