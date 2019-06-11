@@ -19,7 +19,7 @@ def update(pid, port):
 
     #os.kill(pid, signal.SIGKILL)
     res = None
-    res = call("Seed-node" ,"--stop")
+    res = call("Seed-node --stop", shell=True)
     L("kill process")
     L('restart node in 2 sec' )
     time.sleep(2)
