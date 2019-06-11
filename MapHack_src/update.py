@@ -6,7 +6,7 @@ from MapHack_src.log import L
 
 config = get_local_config()
 
-def update(pid):
+def update(pid, port):
     for i in range(3):
         time.sleep(1)
         L('%d sec start update' % (3 -i))
@@ -18,6 +18,8 @@ def update(pid):
 
     os.kill(pid, signal.SIGKILL)
     try:
+        res = os.popen('lsof -t -i tcp:%d | xargs kill -9' % port).read()
+        L("kill process")
         L('restart node in 2 sec' )
         time.sleep(2)
         res = os.popen(config['base']['restart']).read()
@@ -42,9 +44,8 @@ def update(pid):
     L(res)
 
 
-def update_and_start():
-    
-    o = multiprocessing.Process(target=update, args=(os.getpid(),))
+def update_and_start(port): 
+    o = multiprocessing.Process(target=update, args=(os.getpid(),port, ))
     o.start()
     
 

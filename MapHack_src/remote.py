@@ -72,6 +72,7 @@ class Comunication:
         self.s_tag = os.urandom(8)
         self.c_tag = os.urandom(8)
         self.auth_tag = b''
+        self._conf = conf
 
     async def auth(self, reader,writer):
         if self._is_local:
@@ -127,7 +128,7 @@ class Comunication:
 
     async def handle_data(self, data):
         # try:
-        code, res = await Task.from_json(data)
+        code, res = await Task.from_json(data, conf=self._conf)
         return  res
         # except  Exception as e:
             # return str(e)

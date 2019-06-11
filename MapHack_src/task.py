@@ -63,7 +63,7 @@ class Task:
     conf = get_local_config()
     Pocket = ThreadPoolExecutor(max_workers=12)
 
-    def __init__(self, data):
+    def __init__(self, data, pconf=None):
         self._session = data["session"]
         self._data = data
         self._installer = 'apt-get update -y && apt-get install -y '
@@ -75,6 +75,7 @@ class Task:
         if not os.path.exists(root):
             os.mkdir(root)
         self.root = root
+        self._pconf = pconf
     
     @classmethod
     async def Check(cls):
@@ -234,7 +235,7 @@ class Task:
             res = session + "|" + '\n'.join(res)
         
         elif op == 'upgrade':
-            update_and_start()
+            update_and_start(self._pconf['server_port'])
             code, res = 0, "ready update"
         elif op == 'exec':
             session = self._data['session']
@@ -310,13 +311,13 @@ class Task:
         return  D
 
     @classmethod
-    async def from_json(cls, json_data):
+    async def from_json(cls, json_data, conf=None):
         if 'op' not in json_data:
             return 1,'must "op" in data'
         if 'session' not in json_data:
             return 2,'must session in data'
         # if 'app' not in json_data
-        c = cls(json_data)
+        c = cls(json_data, pconf=conf)
         # code, res = await c.check()
         # if code != 0:
             # return  code, res
