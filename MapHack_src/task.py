@@ -309,7 +309,6 @@ class Task:
             if d:
                 D['date'] = d
         elif op == 'install':
-            assert  'app' in kargs
             D = {
                 'op':'install',
                 'session':session,
