@@ -7,6 +7,7 @@ from MapHack_src.remote import  run_server
 from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
 from MapHack_src.log import L
+from MapHack_src.daemon import daemon_exec
 
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
@@ -61,8 +62,10 @@ def main():
         assert  'password' in w
         assert  'method' in w
     if args.start:
+        daemon_exec()
         run_server(w)
     assert  w is not None
+
 
     if args.push_ini and os.path.exists(args.push_ini):
         with open(args.sync_ini) as fp:
