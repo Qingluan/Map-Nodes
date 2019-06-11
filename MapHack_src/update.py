@@ -17,32 +17,15 @@ def update(pid, port):
 
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
 
-    os.kill(pid, signal.SIGKILL)
-    try:
-        #res = os.popen('lsof -t -i tcp:%d | xargs kill -9' % port).read()
-        res = call("Seed-node" ,"--stop")
-        L("kill process")
-        L('restart node in 2 sec' )
-        time.sleep(2)
-        res = call(config['base']['restart'].split())
-    except Exception as e:
-        L(str(e))
-    t = 5
-    while 1:
-        if t == 0:break
-        if res != 0:
-            os.kill(pid, signal.SIGKILL)
-            L('%d sec retry update' % 3 )
-            time.sleep(3)
-            try:
-                res = call(config['base']['restart'].split())
-            except Exception as e:
-                pass
-        else:
-            break
-        t -= 1
-
-
+    #os.kill(pid, signal.SIGKILL)
+    res = None
+    res = call("Seed-node" ,"--stop")
+    L("kill process")
+    L('restart node in 2 sec' )
+    time.sleep(2)
+    L('%d sec retry update' % 3 )
+    time.sleep(3)
+    res = call(config['base']['restart'].split())
     L(res)
 
 
