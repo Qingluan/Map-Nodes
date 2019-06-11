@@ -86,7 +86,7 @@ def write_pid_file(pid_file, pid):
         os.close(fd)
         return -1
     os.ftruncate(fd, 0)
-    os.write(fd, to_bytes(to_str(pid)))
+    os.write(fd, to_bytes(str(pid)))
     return 0
 
 
