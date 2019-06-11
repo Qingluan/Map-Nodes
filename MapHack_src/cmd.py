@@ -13,7 +13,8 @@ parser = argparse.ArgumentParser(usage="a controll node in server, can do some t
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
 parser.add_argument("-s","--start", default=False, action='store_true', help="start server")
 parser.add_argument("--updater", default=False, action='store_true', help="start updater")
-parser.add_argument("--stop", default=False, action='store_true', help="stop server")
+parser.add_argument("-d","--stop", default=False, action='store_true', help="stop server")
+parser.add_argument("-du", "--updater-stop", default=False, action='store_true', help="stop updater")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("--time", default='', help="set time to queyr exm: '2019-9-18'")
@@ -81,6 +82,9 @@ def main():
         daemon_exec(command='stop')
         run_server(w)
 
+    if args.updater_stop:
+        daemon_exec(command='stop', pid_file='/var/run/hack-updater.pid',log_file='/var/log/hack-updater.log')
+        run_server(w)
 
     if args.push_ini and os.path.exists(args.push_ini):
         with open(args.sync_ini) as fp:
