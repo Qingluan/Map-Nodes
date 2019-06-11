@@ -238,7 +238,7 @@ class Task:
             update_and_start(self._pconf['server_port'])
             code, res = 0, "ready update"
         elif op == 'upgrade':
-            data = Task.build_json('', op="upgrade-local", session=self.session)
+            data = Task.build_json('', op="upgrade-local", session=self._session)
             w = self._pconf
             w['server'] = 'localhost'
             w['server_port'] = str(int(w['server_port']) + 1)
