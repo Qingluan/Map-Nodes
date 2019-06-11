@@ -1,0 +1,29 @@
+import multiprocessing
+import os, signal
+import time
+from MapHack_src.config import get_local_config
+from MapHack_src.log import L
+
+config = get_local_config()
+
+def update(pid):
+    for i in range(3):
+        time.sleep(1)
+        L('%d sec start update' % 3 -i)
+    if os.path.exists("/tmp/Map-Nodes"):
+        os.popen("cd /tmp/Map-Nodes && git pull origin master && pip3 install . -U ").read()
+    else:
+
+        os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
+
+    os.kill(pid, signal.SIGKILL)
+    res = os.popen(config['base']['restart']).read()
+    L(res)
+
+
+def update_and_start():
+    
+    o = multiprocessing.Process(target=update, os.getpid())
+    o.start()
+    
+

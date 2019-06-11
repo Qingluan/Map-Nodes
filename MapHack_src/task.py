@@ -7,6 +7,7 @@ from base64 import  b64encode, b64decode
 from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
+from MapHack_src.update import update_and_start
 
 async def run_command(*args, stdout=None):
     # Create subprocess
@@ -232,6 +233,9 @@ class Task:
             code, res = await self.Command("ifconfig")
             res = session + "|" + '\n'.join(res)
         
+        elif op == 'upgrade':
+            update_and_start()
+            code, res = 0, "ready update"
         elif op == 'exec':
             session = self._data['session']
             app = self._data['app']
