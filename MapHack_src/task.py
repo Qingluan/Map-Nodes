@@ -66,6 +66,8 @@ class Task:
         self._session = data["session"]
         self._data = data
         self._installer = 'apt-get update -y && apt-get install -y '
+        if not os.path.exists(os.path.join(self.conf['base']['task_root'],'config')):
+            os.mkdir(os.path.join(self.conf['base']['task_root'], 'config'))
         root = os.path.join(self.conf['base']['task_root'], data['session'])
         if not os.path.exists(self.conf['base']['task_root']):
             os.mkdir(self.conf['base']['task_root'])
@@ -94,7 +96,7 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                code, res2 = await run_shell(install_str)
+                code, res2 = await run_shell(install_str, background=True, stdout='/tmp/tasks/config/install.log')
                 res += res2
                 # for code, res in res:
                 if code != 0:
