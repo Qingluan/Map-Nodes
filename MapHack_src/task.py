@@ -234,9 +234,17 @@ class Task:
             code, res = await self.Command("ifconfig")
             res = session + "|" + '\n'.join(res)
         
-        elif op == 'upgrade':
+        elif op == 'upgrade-local':
             update_and_start(self._pconf['server_port'])
             code, res = 0, "ready update"
+        elif op == 'upgrade':
+            data = Task.build_json('', op="upgrade-local", session=self.session)
+            w = self._pconf
+            w['server'] = 'localhost'
+            w['server_port'] = str(int(w['server_port']) + 1)
+            res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,  Comunication.SendOnce,w, data)
+            code, res = 0, "ready update"
+
         elif op == 'exec':
             session = self._data['session']
             app = self._data['app']

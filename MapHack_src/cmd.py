@@ -64,13 +64,17 @@ def main():
             assert  'server_port' in w
             assert  'password' in w
             assert  'method' in w
-        assert  w is not None
 
     if args.start:
+
+        assert  w is not None
         daemon_exec()
         run_server(w)
     if args.updater:
+        assert  w is not None
         daemon_exec(pid_file="/var/run/hack-updater.pid",log_file="/var/log/hack-updater.log")
+        w['server_port'] = str(int(w['server_port']) + 1)
+        w['server'] = 'localhost'
         run_server(w)
 
     if args.stop:
