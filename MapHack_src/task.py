@@ -208,11 +208,10 @@ class Task:
             L(self._data)
             session = self._data['session']
             app = self._data.get('app','')
-            if app :
-                use_app['log_list'] = {}
             log_dir = os.path.join(self.root, session)
             use_app = {k: self.conf['use'][k] for k in self.conf['use'].keys()}
             if app:
+                use_app['log_list'] = {}
                 for log in os.listdir(log_dir):
                     if log.startswith(app):
                         use_app['log_list'][app] = log
@@ -286,6 +285,7 @@ class Task:
             }
         else:
             D = {
+                'app':app,
                 'op':op,
                 'session':session,
                 'kargs':kargs
