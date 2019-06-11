@@ -9,7 +9,7 @@ config = get_local_config()
 def update(pid):
     for i in range(3):
         time.sleep(1)
-        L('%d sec start update' % 3 -i)
+        L('%d sec start update' % (3 -i))
     if os.path.exists("/tmp/Map-Nodes"):
         os.popen("cd /tmp/Map-Nodes && git pull origin master && pip3 install . -U ").read()
     else:
