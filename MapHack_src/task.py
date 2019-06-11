@@ -208,7 +208,7 @@ class Task:
             L(self._data)
             session = self._data['session']
             app = self._data.get('app','')
-            log_dir = os.path.join(self.root, session)
+            log_dir = self.root
             use_app = {k: self.conf['use'][k] for k in self.conf['use'].keys()}
             if app:
                 use_app['log_list'] = {}
