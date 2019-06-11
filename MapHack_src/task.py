@@ -163,11 +163,11 @@ class Task:
         if os.path.exists(log_file):
             #with open(log_file,'rb') as fp:
             #    log['log'] = b64encode(fp.read()).decode()
-            log['log'] = b64decode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode()).decode()
+            log['log'] = b64decode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode()).decode('utf-8','ignore')
         if os.path.exists(err_log_file):
             #with open(err_log_file,'rb') as fp:
             #    log['err_log'] = b64encode(fp.read()).decode()
-            log['err_log'] = b64decode((await run_shell("tail -n %d %s " % (line,err_log_file) ))[1].encode()).decode()
+            log['err_log'] = b64decode((await run_shell("tail -n %d %s " % (line,err_log_file) ))[1].encode()).decode('utf-8','ignore')
         if not log:
             return  1, 'no any log for "%s" in %s ' % (app_name, log_file)
         return 0,log
