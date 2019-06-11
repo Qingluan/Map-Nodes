@@ -30,12 +30,12 @@ def update(pid, port):
     t = 5
     while 1:
         if t == 0:break
-        if 'address already in use' in res:
+        if res != 0:
             os.kill(pid, signal.SIGKILL)
             L('%d sec retry update' % 3 )
             time.sleep(3)
             try:
-                res = os.popen(config['base']['restart']).read()
+                res = call(config['base']['restart'].split())
             except Exception as e:
                 pass
         else:
