@@ -150,7 +150,7 @@ class Task:
             with open(err_log_file,'rb') as fp:
                 log['err_log'] = b64encode(fp.read()).decode()
         if not log:
-            return  1, 'no any log for "%s" ' % app_name
+            return  1, 'no any log for "%s" in %s ' % (app_name, log_file)
         return 0,log
     
     async def kill_app(self, app_name):
