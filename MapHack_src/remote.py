@@ -31,7 +31,6 @@ class R:
                 L("authed:", code, cc.auth_tag)
             else:
                 code, msg = await cc.trans(reader, writer)
-                L("s:", msg)
             if code != 0:
                 break
 

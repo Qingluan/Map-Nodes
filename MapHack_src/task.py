@@ -172,6 +172,7 @@ class Task:
             app = self._data['app']
             kargs = self._data['kargs']
             background = self._data.get("background", False)
+            L(self._data)
             code, res = await self.run_app(app,background=background,**kargs)
         elif op == 'log':
             app = self._data['app']
