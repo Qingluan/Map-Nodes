@@ -18,8 +18,9 @@ def update(pid):
 
     os.kill(pid, signal.SIGKILL)
     try:
+        L('restart node' )
         res = os.popen(config['base']['restart']).read()
-    except OSError as e:
+    except Exception as e:
         pass
     t = 5
     while 1:
@@ -30,7 +31,7 @@ def update(pid):
             time.sleep(3)
             try:
                 res = os.popen(config['base']['restart']).read()
-            except OSError as e:
+            except Exception as e:
                 pass
         else:
             break
