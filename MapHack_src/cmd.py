@@ -40,6 +40,7 @@ def editor(content):
 
 def main():
     args = parser.parse_args()
+    w = None
 
     if args.generate_sec_conf:
         d = {}
@@ -54,21 +55,22 @@ def main():
         with open("seed-node-server.json", "w") as fp:
             json.dump(d, fp)
         sys.exit(0)
-    w = None
-    f = args.conf
-    with open(f) as fp:
-        w = json.load(fp)
-        assert  'server' in w
-        assert  'server_port' in w
-        assert  'password' in w
-        assert  'method' in w
+    if args.conf:
+        f = args.conf
+        with open(f) as fp:
+            w = json.load(fp)
+            assert  'server' in w
+            assert  'server_port' in w
+            assert  'password' in w
+            assert  'method' in w
+        assert  w is not None
+
     if args.start:
         daemon_exec()
         run_server(w)
     if args.stop:
         daemon_exec(command='stop')
         run_server(w)
-    assert  w is not None
 
 
     if args.push_ini and os.path.exists(args.push_ini):
