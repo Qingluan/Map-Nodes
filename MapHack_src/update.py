@@ -18,6 +18,18 @@ def update(pid):
 
     os.kill(pid, signal.SIGKILL)
     res = os.popen(config['base']['restart']).read()
+    t = 5
+    while 1:
+        if t == 0:break
+        if 'address already in use' in res:
+            os.kill(pid, signal.SIGKILL)
+            time.sleep(3)
+            res = os.popen(config['base']['restart']).read()
+        else:
+            break
+        t -= 1
+
+
     L(res)
 
 
