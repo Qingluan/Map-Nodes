@@ -149,8 +149,9 @@ class Comunication:
             raise Exception("connect failed: %r"%auth_msg )
     
     @classmethod
-    def SendOnce(cls, conf, msg):
-        loop = asyncio.get_event_loop()
+    def SendOnce(cls, conf, msg, loop=None):
+        if not loop:
+            loop = asyncio.get_event_loop()
         return loop.run_until_complete(test_con(conf, msg, loop))
     
 

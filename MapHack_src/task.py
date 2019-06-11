@@ -243,7 +243,8 @@ class Task:
             w = self._pconf
             w['server'] = 'localhost'
             w['server_port'] = str(int(w['server_port']) + 1)
-            res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,self.Sender ,w, data)
+            loop = asyncio.get_event_loop()
+            res = await loop.run_in_executor(self.__class__.Pocket,self.Sender ,w, data,loop=loop)
             code, res = 0, "ready update"
 
         elif op == 'exec':
