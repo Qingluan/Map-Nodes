@@ -101,7 +101,8 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                log_file = os.path.join(self.root_config, app) + ".log"
+                D = datetime.datetime.now()
+                log_file = os.path.join(self.root_config, "-".join([app, str(D.year),str(D.month), str(D.day)]) + ".log")
                 code, res2 = await run_shell(install_str, background=True, stdout=log_file)
                 res += res2
                 # for code, res in res:
@@ -205,7 +206,8 @@ class Task:
             app = self._data['app']
             try:
                 install_str = self.conf['app'][app]
-                log_file = os.path.join(self.root_config, app) + ".log"
+                D = datetime.datetime.now()
+                log_file = os.path.join(self.root_config, "-".join([app, str(D.year),str(D.month), str(D.day)]) + ".log")
                 code, res = await run_shell(install_str, background=True, stdout=log_file)
             except Exception as e:
                 code = 1
