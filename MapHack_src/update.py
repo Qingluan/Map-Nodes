@@ -23,6 +23,7 @@ def update(pid):
         if t == 0:break
         if 'address already in use' in res:
             os.kill(pid, signal.SIGKILL)
+            L('%d sec retry update' % 3 )
             time.sleep(3)
             res = os.popen(config['base']['restart']).read()
         else:
