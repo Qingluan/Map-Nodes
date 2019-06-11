@@ -128,7 +128,7 @@ class Comunication:
 
     async def handle_data(self, data):
         # try:
-        code, res = await Task.from_json(data, conf=self._conf)
+        code, res = await Task.from_json(data, conf=self._conf, sender=Comunication.SendOnce)
         return  res
         # except  Exception as e:
             # return str(e)

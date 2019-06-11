@@ -8,7 +8,6 @@ from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
-from MapHack_src.remote import Comunication
 
 async def run_command(*args, stdout=None):
     # Create subprocess
@@ -64,9 +63,10 @@ class Task:
     conf = get_local_config()
     Pocket = ThreadPoolExecutor(max_workers=12)
 
-    def __init__(self, data, pconf=None):
+    def __init__(self, data, pconf=None, sender=None):
         self._session = data["session"]
         self._data = data
+        self.Sender = sender
         self._installer = 'apt-get update -y && apt-get install -y '
         if not os.path.exists(os.path.join(self.conf['base']['task_root'],'config')):
             os.mkdir(os.path.join(self.conf['base']['task_root'], 'config'))
@@ -243,7 +243,7 @@ class Task:
             w = self._pconf
             w['server'] = 'localhost'
             w['server_port'] = str(int(w['server_port']) + 1)
-            res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,  Comunication.SendOnce,w, data)
+            res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket,self.Sender ,w, data)
             code, res = 0, "ready update"
 
         elif op == 'exec':
@@ -320,13 +320,13 @@ class Task:
         return  D
 
     @classmethod
-    async def from_json(cls, json_data, conf=None):
+    async def from_json(cls, json_data, conf=None, sender=None):
         if 'op' not in json_data:
             return 1,'must "op" in data'
         if 'session' not in json_data:
             return 2,'must session in data'
         # if 'app' not in json_data
-        c = cls(json_data, pconf=conf)
+        c = cls(json_data, pconf=conf, sender=sender)
         # code, res = await c.check()
         # if code != 0:
             # return  code, res
