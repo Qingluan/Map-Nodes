@@ -26,7 +26,7 @@ def update(pid, port):
         time.sleep(2)
         res = call(config['base']['restart'].split())
     except Exception as e:
-        pass
+        L(str(e))
     t = 5
     while 1:
         if t == 0:break
