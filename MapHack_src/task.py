@@ -126,6 +126,8 @@ class Task:
                     code , res = await run_shell(cmd_str, stdout=log_file, background=True)
                     if code != 0:
                         return code, res1
+                    else:
+                        return code, res
             else:
                 code , res = await run_shell(cmd_str, stdout=log_file, background=True)
             return code, res

@@ -63,8 +63,12 @@ def main():
         
         data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option})
         res = Comunication.SendOnce(w, data)
-        L(res[2]['reply'])
-        sys.exit(0)
+        try:
+            L(res[2]['reply'])
+            sys.exit(0)
+        except Exception as e:
+            L(res[2])
+            sys.exit(1)
 
     if args.test:
         data = Task.build_json("", session=args.session, op="test")
