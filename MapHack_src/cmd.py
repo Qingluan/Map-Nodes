@@ -14,6 +14,7 @@ parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("--op", default='run', help="set args run/install/log/test")
 parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
+parser.add_argument("-B","--not-background", default=True, action='store_false', help="send task not in background")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
 parser.add_argument("--sync-ini", default=None,  help="sync local ini to server.")
@@ -61,7 +62,7 @@ def main():
             target = args.app[1]
         app = args.app[0]
         
-        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option})
+        data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])

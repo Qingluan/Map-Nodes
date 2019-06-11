@@ -180,8 +180,11 @@ async def test_con(conf, msg,loop):
     try:
         code, t, data = await asyncio.wait_for(con.recive(), 12)
         if 'log' in data['reply']:
-            data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
-            data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
+            try:
+                data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
+                data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
+            except Exception as e:
+                return code, t, data
         return code, t, data
     except asyncio.TimeoutError:
         return 1, '', 'Timeout'
