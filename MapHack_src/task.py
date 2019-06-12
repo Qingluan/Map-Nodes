@@ -144,6 +144,7 @@ class Task:
             else:
                 L("logfile : " , log_file)
                 code , res = await run_shell(cmd_str, stdout=log_file, background=True)
+                res = cmd_str
             return code, res
         except KeyError as e:
             return 1, template + str(e)
