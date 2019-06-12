@@ -192,7 +192,7 @@ def main():
         sys.exit(0)
 
     if args.tree:
-        data = Task.build_json('tree',op='run', session=args.session, **{'option':args.option, 'background':False, 'date': args.time})
+        data = Task.build_json('tree',op='run', session=args.session, **{getattr(args,'as'): '/tmp/tasks','option':args.option, 'background':False, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])
