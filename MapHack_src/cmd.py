@@ -15,7 +15,7 @@ parser.add_argument("--updater", default=False, action='store_true', help="start
 parser.add_argument("-hh","--remote-help", default=False, action='store_true', help="show remote's help and app , must use -c [config.json]")
 parser.add_argument("-d","--daemon", default=None, help="aciton start/restart/stop  [--updater] ")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
-parser.add_argument("-l","--log", nargs="*", help="show log : [app line] ")
+parser.add_argument("-l","--log", nargs="*", help="show log -l *args: -l app [line time] ")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("--time", default='', help="set time to queyr exm: '2019-9-18'")
 parser.add_argument("--op", default='run', help="set args run/install/log/test")
@@ -133,6 +133,7 @@ def main():
         app = args.log[0]
         if len(args.log) == 2:
             lines = args.log[1]
+            time = args.time
         elif len(args.log) == 3:
             lines = args.log[1]
             time = args.log[2]
