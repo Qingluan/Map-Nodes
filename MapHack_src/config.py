@@ -45,7 +45,7 @@ def get_local_config():
     task_root = config['base']['task_root']
     if not os.path.exists(task_root):
         os.mkdir(task_root)
-    if not os.paht.exists(os.path.join(config['base']['task_root'], 'config')):
+    if not os.path.exists(os.path.join(config['base']['task_root'], 'config')):
         os.mkdir(os.path.join(config['base']['task'],'config'))
     logging.basicConfig(level=getattr(logging,config['base']['level']))
     return  config
