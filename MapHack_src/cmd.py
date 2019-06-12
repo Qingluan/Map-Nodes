@@ -100,7 +100,11 @@ def main():
         content = editor(res[2]['reply'])
         data = Task.build_json('', op="sync-ini", session=args.session, content=content)
         res = Comunication.SendOnce(w, data)
-        L(res[2]['reply'])
+        try:
+            L(res[2]['reply'])
+        except Exception:
+            L(res[2])
+
         if os.path.exists("/tmp/tmp.ini"):
             os.remove('/tmp/tmp.ini')
         sys.exit(0)
