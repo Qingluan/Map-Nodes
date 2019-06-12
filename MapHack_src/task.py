@@ -317,6 +317,7 @@ class Task:
                     'day':day
                 }
             }
+            D.update(kargs)
             if d:
                 D['date'] = d
         elif op == 'install':

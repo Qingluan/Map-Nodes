@@ -24,6 +24,7 @@ parser.add_argument("-o","--option", default='', help="set option default: ''")
 parser.add_argument("-S","--session", default='default', help="set option default: default")
 parser.add_argument("-B","--not-background", default=True, action='store_false', help="send task not in background")
 parser.add_argument("-T","--test", default=False, action='store_true', help="test client ")
+parser.add_argument("--tree", default=False, action='store_true', help="show tree in session")
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
 parser.add_argument("--push-ini", default=None,  help="sync local ini to server.")
 parser.add_argument("--vi-ini", default=False,action='store_true',  help="change ini file in server.")
@@ -141,10 +142,10 @@ def main():
             lines = args.log[1]
             time = args.log[2]
         else:
-            lines = ''
+            lines = '50'
             time = args.time
         
-        data = Task.build_json(app,op='log', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': time, 'lines':lines})
+        data = Task.build_json(app,op='log', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': time, 'line':lines})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])
@@ -188,6 +189,20 @@ def main():
 
     if args.init:
         init(args.init)
+        sys.exit(0)
+
+    if args.tree:
+        data = Task.build_json('tree',op='run', session=args.session, **{'option':args.option, 'background':False, 'date': args.time})
+        res = Comunication.SendOnce(w, data)
+        try:
+            L(res[2]['reply'])
+            sys.exit(0)
+        except Exception as e:
+            L(res[2])
+            sys.exit(1)
+
+
+
 
 
 

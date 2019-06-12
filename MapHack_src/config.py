@@ -16,6 +16,7 @@ restart = /usr/local/bin/Seed-node -d start -c /root/.mapper.json
 server_dir = ~/.server_dir
 
 [app]
+tree = apt-get install -y tree
 ping = apt-get install -y iputils-ping
 nmap = apt-get install -y nmap
 sqlmap = pip3 install sqlmap
@@ -26,6 +27,7 @@ whatweb = cd /opt/ && apt-get install -y gem ruby-devel && wget https://github.c
 dnsrecon = pip3 install netaddr dnspython lxml; git clone https://github.com/darkoperator/dnsrecon.git        /opt/dnsrecon && sed -ie 's/env python$/env python3/g' /opt/dnsrecon/dnsrecon.py && ln -s /opt/dnsrecon/dnsrecon.py /usr/local/bin/dnsrecon                                
 
 [use]
+tree = tree {ip} {option}
 nmap = nmap -sS -A {ip} {option}
 dirsearch = dirsearch -u {ip} -e {option} --random-agents -s 2                               
 sqlmap = sqlmap -t {ip} --dbs  {option}
