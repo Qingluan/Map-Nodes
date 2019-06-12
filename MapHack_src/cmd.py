@@ -7,6 +7,7 @@ from MapHack_src.remote import  run_server
 from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
 from MapHack_src.log import L
+from MapHack_src.init import init
 from MapHack_src.daemon import daemon_exec
 
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
@@ -26,6 +27,8 @@ parser.add_argument("-T","--test", default=False, action='store_true', help="tes
 parser.add_argument("-i","--generate-sec-conf", default=False, action='store_true', help="initial json conf in server ")
 parser.add_argument("--push-ini", default=None,  help="sync local ini to server.")
 parser.add_argument("--vi-ini", default=False,action='store_true',  help="change ini file in server.")
+parser.add_argument("--init", default=None,  help="init remote by ssh : --init root@server.com:10022")
+
 
 def editor(content):
     EDITOR = os.environ.get('EDITOR','vim') #that easy!
@@ -175,9 +178,16 @@ def main():
     if args.remote_help:
         data = Task.build_json('',op='list', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
-        L(res[2]['reply'])
-        sys.exit(0)
+        try:
+            L(res[2]['reply'])
+            sys.exit(0)
+        except Exception as e:
+            L(res[2])
+            sys.exit(1)
 
+
+    if args.init:
+        init(args.init)
 
 
 

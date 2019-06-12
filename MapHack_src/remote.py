@@ -124,7 +124,8 @@ class Comunication:
         de = self._crypt.decrypt(data)
         code,t,data = Data.unpatch(de)
         logging.debug("R:%s" % data)
-        return  code, t, json.loads(data.decode())
+        data = data if isinstance(data, str) else data.decode()
+        return  code, t, json.loads(data)
 
     async def handle_data(self, data):
         # try:
