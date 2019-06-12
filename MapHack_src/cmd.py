@@ -12,6 +12,7 @@ from MapHack_src.daemon import daemon_exec
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
 parser.add_argument("--updater", default=False, action='store_true', help="start updater")
+parser.add_argument("-hh","--remote-help", default=False, action='store_true', help="show remote's help and app , must use -c [config.json]")
 parser.add_argument("-d","--daemon", default=None, help="aciton start/restart/stop  [--updater] ")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
 parser.add_argument("-l","--log", nargs="*", help="show log : [app line] ")
@@ -169,6 +170,13 @@ def main():
         res = Comunication.SendOnce(w, data)
         L(res[2]['reply'])
         sys.exit(0)
+
+    if args.remote_help:
+        data = Task.build_json('',op='list', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
+        res = Comunication.SendOnce(w, data)
+        L(res[2]['reply'])
+        sys.exit(0)
+
 
 
 
