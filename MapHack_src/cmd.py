@@ -14,6 +14,7 @@ parser.add_argument("-c","--conf", help="use config json  file ,format like ss."
 parser.add_argument("--updater", default=False, action='store_true', help="start updater")
 parser.add_argument("-d","--daemon", default=None, help="aciton start/restart/stop  [--updater] ")
 parser.add_argument("-a","--app", nargs="*", help="set app name")
+parser.add_argument("-l","--log", nargs="*", help="show log : [app line] ")
 parser.add_argument("-t","--as", default='ip', help="set args ip/host")
 parser.add_argument("--time", default='', help="set time to queyr exm: '2019-9-18'")
 parser.add_argument("--op", default='run', help="set args run/install/log/test")
@@ -126,6 +127,27 @@ def main():
         except Exception as e:
             L(res[2])
             sys.exit(1)
+            
+    if args.log:
+        app = args.log[0]
+        if len(args.log) == 2:
+            lines = args.log[1]
+        elif len(args.log) == 3:
+            lines = args.log[1]
+            time = args.log[2]
+        else:
+            lines = ''
+            time = args.time
+        
+        data = Task.build_json(app,op='log', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': time, 'lines':lines})
+        res = Comunication.SendOnce(w, data)
+        try:
+            L(res[2]['reply'])
+            sys.exit(0)
+        except Exception as e:
+            L(res[2])
+            sys.exit(1)
+
 
     if args.op != 'run':
         if args.app:
