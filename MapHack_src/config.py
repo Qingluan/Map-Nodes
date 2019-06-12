@@ -20,6 +20,7 @@ dirsearch = git clone https://github.com/maurosoria/dirsearch.git /opt/dirsearch
 masscan = apt-get -y install git gcc make libpcap-dev && cd /tmp/ &&  git clone https://github.com/robertdavidgraham/masscan  && cd masscan && make && make install
 dirbpy = pip3 install dirbpy
 whatweb = cd /opt/ && apt-get install -y gem ruby-devel && wget https://github.com/urbanadventurer/WhatWeb/archive/v0.4.9.zip -O /opt/whatweb.zip && cd /opt/ && unzip whatweb.zip ; ln -s /opt/WhatWeb-0.4.9/whatweb /usr/local/bin/whatweb
+dnsrecon = pip3 install netaddr && git clone https://github.com/darkoperator/dnsrecon.git /opt/dnsrecon && ln -s /opt/dnsrecon/dnsrecon.py /usr/local/bin/dnsrecon
 
 [use]
 nmap = nmap -sS -A {ip} {option}
@@ -29,6 +30,7 @@ ping = ping {ip} -c 5
 masscan = masscan {ip}  -p22-10000  --banners --rate 1000
 dirbpy = dirbpy -o https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -u {ip}
 whatweb = whatweb  {option} {ip}
+dnsrecon = dnsrecon {option} {ip}
 
 """
     with open(PATH, 'w') as fp:
