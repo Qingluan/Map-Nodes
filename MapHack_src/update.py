@@ -19,6 +19,9 @@ def update(port):
 
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
     version = os.popen('cd /tmp/Map-Nodes/.git && cat FETCH_HEAD').read().split()[0]
+    if not version:
+        version = time.asctime()
+    L("version:", version)
 
     #os.kill(pid, signal.SIGKILL)
     res = None
