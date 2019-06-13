@@ -366,9 +366,20 @@ class Task:
                 w['server'] = 'localhost'
                 w['server_port'] = str(int(w['server_port']) - 1)
                 w['mark'] = True
-            time.sleep(10)
+            time.sleep(12)
             loop = asyncio.get_event_loop()
-            res = await self.Sender(w, data,loop)
+            err_try = 0
+            while 1:
+                L("try restart updater: %d" % err_try)
+                try:
+                    res = await self.Sender(w, data,loop)
+                    break
+                except OSError:
+                    if err_try > 3:
+                        res = 'try bad'
+                        break
+                    err_try += 1
+                    time.sleep(5)
             code = 0
         elif op == 'upgrade-local-fi':
             code, res = await run_shell("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")
