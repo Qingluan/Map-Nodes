@@ -27,7 +27,8 @@ def update(port):
     time.sleep(2)
     L('%d sec retry update' % 3 )
     time.sleep(3)
-    res = call(config['base']['restart'].split())
+    restart_str = [os.path.expanduser(i) if i.startswith("~") else i for i in config['base']['restart'].split() ]
+    res = call(restart_str)
     L(res)
 
 
