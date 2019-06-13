@@ -370,14 +370,15 @@ class Task:
             loop = asyncio.get_event_loop()
             err_try = 0
             res = ''
+            L(w)
             while 1:
-                L("try restart updater: %d: %s" % (err_try, res))
                 try:
                     res = await self.Sender(w, data,loop)
                     break
                 except OSError as e:
                     if err_try > 3:
                         res = 'try bad' + str(e)
+                        L("try restart updater: %d: %s" % (err_try, res))
                         break
                     err_try += 1
                     time.sleep(5)
