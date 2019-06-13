@@ -51,7 +51,7 @@ class TaskData:
             pid = cls.get(pid)
         if pid:
             try:
-                os.kill(pid, 0)
+                os.kill(int(pid), 0)
             except ProcessLookupError:
                 return False
             else:
