@@ -2,12 +2,13 @@ import  sqlite3
 import  asyncio
 import  logging
 import  datetime
-import  os
+import  os, signal
 from base64 import  b64encode, b64decode
 from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
+
 
 class TaskData:
     Datas = {}
@@ -15,6 +16,9 @@ class TaskData:
 
     @classmethod
     def get(cls, pid):
+        if not cls.Datas:
+            cls.load()
+
         if pid in cls.Datas:
             return cls.Datas.get(pid)
         elif pid in cls.RDatas:
@@ -59,6 +63,21 @@ class TaskData:
                 return True
         return False
 
+    @classmethod
+    def save(cls, a,b):
+        with open("/tmp/task_info.json", 'w') as fp:
+            json.dump({'p':cls.Datas, 'l':cls.RDatas})
+    
+    @classmethod
+    def load(cls):
+        if os.path.exists("/tmp/task_info.json"):
+            with open("/tmp/task_info.json") as fp:
+                d = json.load(fp)
+                cls.Datas.update(d['p'])
+                cls.RDatas.update(d['l'])
+            os.remove("/tmp/task_info.json")
+
+signal.signal(signal.SIGTERM, TaskData.save)
 
 async def run_command(*args, stdout=None):
     # Create subprocess
@@ -204,9 +223,15 @@ class Task:
             return code, res
         except KeyError as e:
             return 1, template + str(e)
+
+    def load_tasks(self):
+        for root, ds, fs in os.walk(self.root):
+            for f in fs:
+                if f.endswith('.log'):
+                    yield f
         
     async def check_tasks(self):
-        ks = TaskData.logs()
+        ks = list(self.load_tasks())
         result = {}
         for log in ks:
             f = TaskData.running(log)
