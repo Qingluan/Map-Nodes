@@ -359,7 +359,7 @@ class Task:
         
         elif op == 'upgrade-local':
             TaskData.save(None,None)
-            version = update_and_start(self._pconf['server_port'])
+            version = update_and_start(self._pconf['server_port'], wait=True)
             L("version : ", version)
             data = Task.build_json('', op="upgrade-local-fi", session=self._session)
             with open(os.path.expanduser("~/.mapper.json")) as fp:

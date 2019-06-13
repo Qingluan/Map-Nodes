@@ -35,8 +35,11 @@ def update(port):
     return version
 
 
-def update_and_start(port): 
-    o = multiprocessing.Process(target=update, args=(port, ))
-    o.start()
+def update_and_start(port, wait=False): 
+    if not wait:
+        o = multiprocessing.Process(target=update, args=(port, ))
+        o.start()
+    else:
+        return update(port)
     
 
