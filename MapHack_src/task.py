@@ -234,8 +234,7 @@ class Task:
         if os.path.exists(log_file):
             #with open(log_file,'rb') as fp:
             #    log['log'] = b64encode(fp.read()).decode()
-            log['log'] = b64encode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode()).decode('utf-8','ignore')
-            log['log'] += running_if_str
+            log['log'] = b64encode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode() + running_if_str.encode() ).decode('utf-8','ignore')
         if os.path.exists(err_log_file):
             #with open(err_log_file,'rb') as fp:
             #    log['err_log'] = b64encode(fp.read()).decode()
