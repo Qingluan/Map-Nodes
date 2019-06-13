@@ -361,11 +361,8 @@ class Task:
             TaskData.save(None,None)
             update_and_start(self._pconf['server_port'])
             data = Task.build_json('', op="upgrade-local-fi", session=self._session)
-            w = self._pconf
-            if 'mark' not in self._pconf:
-                w['server'] = 'localhost'
-                w['server_port'] = str(int(w['server_port']) - 1)
-                w['mark'] = True
+            with open(os.path.expanduser("~/.mapper.json")) as fp:
+                w = json.load(fp)
             time.sleep(12)
             loop = asyncio.get_event_loop()
             err_try = 0
