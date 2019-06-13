@@ -17,7 +17,7 @@ class TaskData:
     def get(cls, pid):
         if pid in cls.Datas:
             return cls.Datas.get(pid)
-        elif pid in RDatas:
+        elif pid in cls.RDatas:
             return cls.RDatas[pid]
 
     @classmethod

@@ -23,10 +23,8 @@ def update(port):
     res = None
     res = call("Seed-node -d stop", shell=True)
     L("kill process")
-    L('restart node in 2 sec' )
-    time.sleep(2)
-    L('%d sec retry update' % 3 )
-    time.sleep(3)
+    L('restart node in 0.5 sec' )
+    time.sleep(0.5)
     restart_str = [os.path.expanduser(i) if i.startswith("~") else i for i in config['base']['restart'].split() ]
     res = call(restart_str)
     L(res)
