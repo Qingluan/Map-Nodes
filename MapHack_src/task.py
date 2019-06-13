@@ -65,12 +65,14 @@ class TaskData:
 
     @classmethod
     def save(cls, a,b):
+        L("save task info ")
         with open("/tmp/task_info.json", 'w') as fp:
             json.dump({'p':cls.Datas, 'l':cls.RDatas})
     
     @classmethod
     def load(cls):
         if os.path.exists("/tmp/task_info.json"):
+            L("load task info ")
             with open("/tmp/task_info.json") as fp:
                 d = json.load(fp)
                 cls.Datas.update(d['p'])
