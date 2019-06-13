@@ -360,8 +360,15 @@ class Task:
         elif op == 'upgrade-local':
             TaskData.save(None,None)
             update_and_start(self._pconf['server_port'])
-            os.popen('Seed-node -c ~/.mapper.json --op upgrade-local-fi')
-            code, res = 0, "ready update"
+            data = Task.build_json('', op="upgrade-local-fi", session=self._session)
+            w = self._pconf
+            if 'mark' not in self._pconf:
+                w['server'] = 'localhost'
+                w['server_port'] = str(int(w['server_port']) - 1)
+                w['mark'] = True
+            loop = asyncio.get_event_loop()
+            res = await self.Sender(w, data,loop)
+            code = 0
         elif op == 'upgrade-local-fi':
             code, res = await run_shell("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")
         elif op == 'upgrade':
