@@ -80,6 +80,7 @@ class TaskData:
             os.remove("/tmp/task_info.json")
 
 signal.signal(signal.SIGTERM, TaskData.save)
+signal.signal(signal.SIGKILL, TaskData.save)
 
 async def run_command(*args, stdout=None):
     # Create subprocess
