@@ -49,9 +49,10 @@ class TaskData:
     def running(cls, pid):
         if pid in cls.RDatas:
             pid = cls.get(pid)
-        if pid:
+        
+        if pid and isinstance(pid, int):
             try:
-                os.kill(int(pid), 0)
+                os.kill(pid, 0)
             except ProcessLookupError:
                 return False
             else:
