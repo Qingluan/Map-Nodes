@@ -186,6 +186,8 @@ async def test_con(conf, msg,loop, no_read=False):
         return 0,None
     try:
         code, t, data = await asyncio.wait_for(con.recive(), 12)
+        if 'reply' not in data:
+            return code,t,data
         if 'log' in data['reply']:
             try:
                 data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
