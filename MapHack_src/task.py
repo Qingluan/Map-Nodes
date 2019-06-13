@@ -210,8 +210,6 @@ class Task:
         for log in ks:
             f = TaskData.running(log)
             result[log] = f
-            if not f:
-                TaskData.finish(log)
         return 0,result
     
     async def get_app_log(self, app_name, date=None,pid=None, line=50):
