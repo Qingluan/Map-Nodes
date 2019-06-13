@@ -364,8 +364,10 @@ class Task:
         elif op == 'upgrade':
             data = Task.build_json('', op="upgrade-local", session=self._session)
             w = self._pconf
-            w['server'] = 'localhost'
-            w['server_port'] = str(int(w['server_port']) + 1)
+            if 'mark' not in self._pconf:
+                w['server'] = 'localhost'
+                w['server_port'] = str(int(w['server_port']) + 1)
+                w['mark'] = True
             loop = asyncio.get_event_loop()
             res = await self.Sender(w, data,loop)
             code, res = 0, "ready update"
