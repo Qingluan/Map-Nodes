@@ -206,6 +206,7 @@ class Task:
         
     async def check_tasks(self):
         ks = TaskData.logs()
+        result = {}
         for log in ks:
             f = TaskData.running(log)
             result[log] = f
