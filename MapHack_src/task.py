@@ -360,7 +360,6 @@ class Task:
         elif op == 'upgrade-local':
             TaskData.save(None,None)
             version = update_and_start(self._pconf['server_port'], wait=True)
-            L("version : ", version)
             data = Task.build_json('', op="upgrade-local-fi", session=self._session)
             with open(os.path.expanduser("~/.mapper.json")) as fp:
                 w = json.load(fp)
@@ -368,7 +367,6 @@ class Task:
             loop = asyncio.get_event_loop()
             err_try = 0
             res = ''
-            L(w)
             while 1:
                 try:
                     res = await asyncio.wait_for(self.Sender(w, data,loop, no_read=True), timeout=2)
@@ -380,8 +378,9 @@ class Task:
                         break
                     err_try += 1
                     time.sleep(5)
-                except Exception:
+                except asyncio.TimeoutError:
                     res = version
+            L("version : ", version)
             res = version
             code = 0
         elif op == 'upgrade-local-fi':
