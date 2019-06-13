@@ -115,7 +115,6 @@ def main():
             if args.daemon == 'start':
                 assert  w is not None
                 daemon_exec()
-                os.popen("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")
                 run_server(w)
             elif args.daemon == 'stop':
                 daemon_exec(command='stop')
