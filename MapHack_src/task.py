@@ -371,7 +371,7 @@ class Task:
             L(w)
             while 1:
                 try:
-                    res = await self.Sender(w, data,loop, no_read=True)
+                    res = await asyncio.wait_for(self.Sender(w, data,loop, no_read=True), timeout=2)
                     break
                 except OSError as e:
                     if err_try > 3:
@@ -380,6 +380,8 @@ class Task:
                         break
                     err_try += 1
                     time.sleep(5)
+                except Exception:
+                    res = version
             res = version
             code = 0
         elif op == 'upgrade-local-fi':
