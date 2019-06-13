@@ -67,7 +67,7 @@ class TaskData:
     def save(cls, a,b):
         L("save task info ")
         with open("/tmp/task_info.json", 'w') as fp:
-            json.dump({'p':cls.Datas, 'l':cls.RDatas})
+            json.dump({'p':cls.Datas, 'l':cls.RDatas}, fp)
     
     @classmethod
     def load(cls):
