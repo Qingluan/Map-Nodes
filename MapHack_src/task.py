@@ -244,9 +244,13 @@ class Task:
         return 0,result
     
     async def check_info(self):
+        if 'version' not in list(self.conf['base'].keys()):
+            version = 'X'
+        else:
+            version = self.conf['base']['version']
         session = os.listdir(self.conf['base']['task_root'])
         apps = list(self.conf['use'].keys())
-        return 0, {'session':session, 'app': apps}
+        return 0, {'session':session, 'app': apps, 'version':version}
     
     async def get_app_log(self, app_name, date=None,pid=None, line=50):
         if not date:
@@ -359,7 +363,7 @@ class Task:
         
         elif op == 'upgrade-local':
             TaskData.save(None,None)
-            version = update_and_start(self._pconf['server_port'], wait=True)
+            version = update_and_start(self._pconf['server_port'])
             data = Task.build_json('', op="upgrade-local-fi", session=self._session)
             with open(os.path.expanduser("~/.mapper.json")) as fp:
                 w = json.load(fp)

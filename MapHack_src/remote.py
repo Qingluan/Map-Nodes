@@ -186,6 +186,8 @@ async def test_con(conf, msg,loop, no_read=False):
         return 0,None
     try:
         code, t, data = await asyncio.wait_for(con.recive(), 12)
+        if not data:
+            return code, t, 'no data recive you can check version by --op info'
         if 'reply' not in data:
             return code,t,data
         if 'log' in data['reply']:

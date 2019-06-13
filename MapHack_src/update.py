@@ -2,6 +2,8 @@ import multiprocessing
 import os, signal
 import time
 from MapHack_src.config import get_local_config
+from MapHack_src.config import update as update_conf
+
 from MapHack_src.log import L
 from subprocess import call
 from MapHack_src.daemon import daemon_exec
@@ -22,6 +24,7 @@ def update(port):
     if version is None:
         version = time.asctime()
     L("new version:", version)
+    update_conf('base','version',version)
 
     #os.kill(pid, signal.SIGKILL)
     res = None
