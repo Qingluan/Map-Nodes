@@ -9,6 +9,56 @@ from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
 
+class TaskData:
+    Datas = {}
+    RDatas = {}
+
+    @classmethod
+    def get(cls, pid):
+        if pid in cls.Datas:
+            return cls.Datas.get(pid)
+        elif pid in RDatas:
+            return cls.RDatas[pid]
+
+    @classmethod
+    def finish(cls, pid):
+        if pid in cls.Datas:
+            log = cls.get(pid)
+            del cls.Datas[pid] 
+            del cls.RDatas[log]
+        elif pid in cls.RDatas:
+            log = cls.get(pid)
+            del cls.RDatas[pid]
+            del cls.Datas[log]
+
+
+    @classmethod
+    def set(cls, pid, log_file):
+        cls.Datas[pid] = log_file
+        cls.RDatas[log_file] = pid
+
+    @classmethod
+    def logs(cls):
+        return list(cls.RDatas.keys())
+
+    @classmethod
+    def pids(cls):
+        return list(cls.Datas.keys())
+ 
+    @classmethod
+    def running(cls, pid):
+        if pid in cls.RDatas:
+            pid = cls.get(pid)
+        if pid:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                return False
+            else:
+                return True
+        return False
+
+
 async def run_command(*args, stdout=None):
     # Create subprocess
     process = await asyncio.create_subprocess_exec(
@@ -30,6 +80,7 @@ async def run_command(*args, stdout=None):
 async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
     
+    log_file = None
     if background:
         if stdout:
             stderr = stdout + ".err"
@@ -37,6 +88,7 @@ async def run_shell(shell, stdout=None, background=False):
 
         shell = "nohup " + shell + " &"
         result = 'run in background: %s ' % stdout
+        log_file = stdout
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
         # stdout must a pipe to be accessible as process.stdout
@@ -50,6 +102,9 @@ async def run_shell(shell, stdout=None, background=False):
         result = stderr.decode().strip()
         L("failed:", result)
     else:
+        if log_file and background:
+            pid = process.pid
+            TaskData.set(pid, log_file)
         result = stdout.decode().strip()
     return process.returncode, result
 
@@ -149,9 +204,16 @@ class Task:
         except KeyError as e:
             return 1, template + str(e)
         
+    async def check_tasks(self):
+        ks = TaskData.logs()
+        for log in ks:
+            f = TaskData.running(log)
+            result[log] = f
+            if not f:
+                TaskData.finish(log)
+        return 0,result
     
-    
-    async def get_app_log(self, app_name, date=None, line=50):
+    async def get_app_log(self, app_name, date=None,pid=None, line=50):
         if not date:
             date = datetime.datetime.now()
         if not isinstance(date, str):
@@ -159,18 +221,27 @@ class Task:
         else:
             log_file = os.path.join(self.root, app_name + "-%s" % date + ".log")
 
+        if pid and pid in TaskData.Datas:
+            log_file = TaskData.get(pid)
+
         err_log_file = log_file + ".err"
         log = {}
+        running = TaskData.running(log_file)
+        running_if_str = '\n[Running]' if running else '\n[Stop]'
+        if not running:
+            TaskData.finish(TaskData.get(log_file))
+
         if os.path.exists(log_file):
             #with open(log_file,'rb') as fp:
             #    log['log'] = b64encode(fp.read()).decode()
             log['log'] = b64encode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode()).decode('utf-8','ignore')
+            log['log'] += running_if_str
         if os.path.exists(err_log_file):
             #with open(err_log_file,'rb') as fp:
             #    log['err_log'] = b64encode(fp.read()).decode()
             log['err_log'] = b64encode((await run_shell("tail -n %d %s " % (line,err_log_file) ))[1].encode()).decode('utf-8','ignore')
         if not log:
-            return  1, 'no any log for "%s" in %s ' % (app_name, log_file)
+            return  1, 'no any log for "%s" in %s %s' % (app_name, log_file, running_if_str) 
         return 0,log
     
     async def kill_app(self, app_name):
@@ -230,6 +301,8 @@ class Task:
                 res = res2 + '\n' + res
         elif op == 'update':
             code, res = await self.check()
+        elif op == 'check':
+            code, res = await self.check_tasks()
         elif op == 'list':
             session = self._data['session']
             app = self._data.get('app','')
