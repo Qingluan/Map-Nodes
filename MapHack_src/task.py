@@ -359,7 +359,7 @@ class Task:
         
         elif op == 'upgrade-local':
             TaskData.save(None,None)
-            update_and_start(self._pconf['server_port'])
+            version = update_and_start(self._pconf['server_port'])
             data = Task.build_json('', op="upgrade-local-fi", session=self._session)
             with open(os.path.expanduser("~/.mapper.json")) as fp:
                 w = json.load(fp)
@@ -370,7 +370,7 @@ class Task:
             L(w)
             while 1:
                 try:
-                    res = await self.Sender(w, data,loop)
+                    res = await self.Sender(w, data,loop, no_read=True)
                     break
                 except OSError as e:
                     if err_try > 3:
@@ -379,6 +379,7 @@ class Task:
                         break
                     err_try += 1
                     time.sleep(5)
+            res = version
             code = 0
         elif op == 'upgrade-local-fi':
             code, res = await run_shell("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")

@@ -10,14 +10,15 @@ from MapHack_src.daemon import daemon_exec
 config = get_local_config()
 def update(port):
     config = get_local_config()
-    for i in range(3):
+    for i in range(1):
         time.sleep(1)
-        L('%d sec start update' % (3 -i))
+        L('%d sec start update' % (1 -i))
     if os.path.exists("/tmp/Map-Nodes"):
         os.popen("cd /tmp/Map-Nodes && git pull origin master && pip3 install . -U ").read()
     else:
 
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
+    version = os.popen('cd /tmp/Map-Nodes && git --no-pager log -1').read().split()[1]
 
     #os.kill(pid, signal.SIGKILL)
     res = None
@@ -28,6 +29,7 @@ def update(port):
     restart_str = [os.path.expanduser(i) if i.startswith("~") else i for i in config['base']['restart'].split() ]
     res = call(restart_str)
     L(res)
+    return version
 
 
 def update_and_start(port): 

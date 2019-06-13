@@ -155,8 +155,8 @@ class Comunication:
             loop = asyncio.get_event_loop()
         return loop.run_until_complete(test_con(conf, msg, loop))
 
-    async def sendone(self, conf, msg, loop):
-        return await test_con(conf, msg, loop) 
+    async def sendone(self, conf, msg, loop, no_read=False):
+        return await test_con(conf, msg, loop, no_read=no_read) 
     
 
 
@@ -178,10 +178,12 @@ def run_server(conf):
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
-async def test_con(conf, msg,loop):
+async def test_con(conf, msg,loop, no_read=False):
     
     con, R, W = await Comunication.Con(conf, loop=loop)
     await con.reply("msg", **msg)
+    if no_read:
+        return 0,None
     try:
         code, t, data = await asyncio.wait_for(con.recive(), 12)
         if 'log' in data['reply']:
