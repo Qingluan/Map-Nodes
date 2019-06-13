@@ -366,6 +366,7 @@ class Task:
                 w['server'] = 'localhost'
                 w['server_port'] = str(int(w['server_port']) - 1)
                 w['mark'] = True
+            time.sleep(10)
             loop = asyncio.get_event_loop()
             res = await self.Sender(w, data,loop)
             code = 0
