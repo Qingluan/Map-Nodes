@@ -22,6 +22,7 @@ class TaskData:
         if pid in cls.Datas:
             return cls.Datas.get(pid)
         elif pid in cls.RDatas:
+            pid = os.path.basename(pid) if '/' in pid else pid
             return cls.RDatas[pid]
 
     @classmethod
@@ -38,6 +39,7 @@ class TaskData:
 
     @classmethod
     def set(cls, pid, log_file):
+        log_file = os.path.basename(log_file) if '/' in log_file else log_file
         cls.Datas[pid] = log_file
         cls.RDatas[log_file] = pid
 
@@ -52,6 +54,7 @@ class TaskData:
     @classmethod
     def running(cls, pid):
         if pid in cls.RDatas:
+            pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
         
         if pid and isinstance(pid, int):
@@ -240,6 +243,11 @@ class Task:
             result[log] = f
         return 0,result
     
+    async def check_info(self):
+        session = os.listdir(self.conf['base']['task_root'])
+        apps = list(self.conf['use'].keys())
+        return 0, {'session':session, 'app': apps}
+    
     async def get_app_log(self, app_name, date=None,pid=None, line=50):
         if not date:
             date = datetime.datetime.now()
@@ -329,6 +337,8 @@ class Task:
             code, res = await self.check()
         elif op == 'check':
             code, res = await self.check_tasks()
+        elif op == 'info':
+            code, res = await self.check_info()
         elif op == 'list':
             session = self._data['session']
             app = self._data.get('app','')

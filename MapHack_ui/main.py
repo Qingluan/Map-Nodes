@@ -32,6 +32,13 @@ class ConfigCheck(CheckBox):
                     log('go',str(self.last_refresh))
                 # self.show(T)
                 # ()
+    def get_options(self):
+        res = []
+        for k in self.datas:
+            if self.datas[k]:
+                res.append(k)
+        return res
+
     def show(self,text):
         # TextPanel.last_popup.endwin()
         
@@ -50,9 +57,9 @@ class ConfigCheck(CheckBox):
         select = Stack.Popup(["log","attack", "change config","cancel"], context=self, exit_key=10)
         Stack.Cl()
         self.Redraw()
-        ok_keys = [i for i in self.datas if self.datas[i]]
+        ok_keys = self.get_options()
         if select == 'attack':
-            res = Text.Popup(content=str(ok_keys), screen=self.screen, x=Application.width // 3,y = Application.height, max_height=3)
+            res = Text.Popup(content=str(ok_keys), height=0,screen=self.screen, x=self.width // 4,y = self.ix+4, max_height=1, exit_key=10, style='norm', title='set target')
             log('write : ',res)
 
 def main():

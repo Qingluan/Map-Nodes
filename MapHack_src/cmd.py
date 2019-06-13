@@ -9,6 +9,7 @@ from MapHack_src.task import Task
 from MapHack_src.log import L
 from MapHack_src.init import init
 from MapHack_src.daemon import daemon_exec
+from MapHack_src.config import get_local_config, update
 
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
@@ -47,6 +48,34 @@ def editor(content):
 def main():
     args = parser.parse_args()
     w = None
+    conf = get_local_config()
+    #if 'last_session' not in list(conf['client'].keys()):
+    #    update('client','last_session', args.session)
+    #    conf = get_local_config()
+    #else:
+    #    update('client','last_session', args.session)
+
+    #if 'last_op' not in list(conf['client'].keys()):
+    #    update('client','last_op', args.op)
+    #    conf = get_local_config()
+    #
+    #if 'last_app' not in list(conf['client'].keys()):
+    #    if not args.app:
+    #        app = ''
+    #    else:
+    #        app = args.app[0]
+    #    update('client','last_app', app)
+    #    conf = get_local_config()
+
+    #last_session = conf['client']['last_session']
+    #last_app = conf['client']['last_app']
+    #last_op = conf['client']['last_op']
+    #if '-s' not in sys.argv:
+    #    args.session = last_session
+    #if '--op' not in sys.argv and '-l' not in sys.argv :
+    #    args.op = last_op
+
+    L('session: ', args.session, 'op: ',args.op)
 
     if args.generate_sec_conf:
         d = {}
@@ -119,6 +148,7 @@ def main():
 
 
     if args.app:
+        args.op = 'run'
         if len(args.app) == 1:
             target = ''
         else:
@@ -135,6 +165,8 @@ def main():
             sys.exit(1)
             
     if args.log:
+        args.op = 'log'
+        args.app = args.log[0]
         app = args.log[0]
         if len(args.log) == 2:
             lines = args.log[1]
