@@ -80,7 +80,6 @@ class TaskData:
             os.remove("/tmp/task_info.json")
 
 signal.signal(signal.SIGTERM, TaskData.save)
-signal.signal(signal.SIGKILL, TaskData.save)
 
 async def run_command(*args, stdout=None):
     # Create subprocess
@@ -349,6 +348,7 @@ class Task:
             res = session + "|" + '\n'.join(res)
         
         elif op == 'upgrade-local':
+            TaskData.save(None,None)
             update_and_start(self._pconf['server_port'])
             code, res = 0, "ready update"
         elif op == 'upgrade':
