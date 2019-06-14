@@ -148,6 +148,16 @@ class Comunication:
             return con, reader,writer
         else:
             raise Exception("connect failed: %r"%auth_msg )
+
+    @classmethod
+    def SendMul(cls, confs, msgs, loop=None):
+        fs = []
+        for i,msg in enumerate(msgs):
+            conf = confs[i % len(confs)]
+            fs.append(test_con(conf, msg,loop))
+        fu = asyncio.gather(*fs)
+        return loop.run_until_complete(fu)
+
     
     @classmethod
     def SendOnce(cls, conf, msg, loop=None):

@@ -420,6 +420,9 @@ class Task:
             os.remove(f)
             return  1,str(e)
         
+    @classmethod
+    def build_jsons(cls, apps, op='run', year=None,mon=None,day=None, session=None,  **kargs):
+        return [cls.build_json(app, op=op, year=year, mon=mon, day=day, session=session, **kargs) for app in apps]
     
     @classmethod
     def build_json(cls, app, op='run', year=None,mon=None,day=None, session=None,  **kargs):
