@@ -9,10 +9,20 @@ from MapHack_src.task import Task
 from MapHack_src.remote import Comunication
 import json
 import time
+import tempfile
+from subprocess import call
 
 
 CONF = get_local_config()
 SERVER_ROOT = os.path.expanduser(CONF['client']['server_dir'])
+
+def editor(content):
+    EDITOR = os.environ.get('EDITOR','vim') #that easy!
+    with tempfile.NamedTemporaryFile(suffix=".tmp") as tf:
+        tf.write(content.encode())
+        tf.flush()
+        call([EDITOR, tf.name])
+
 
 class IpMenu(Stack):
 
@@ -37,6 +47,15 @@ class IpMenu(Stack):
     def update_when_cursor_change(self, item, ch):
         if ch == 'l':
             self.show_log(item)
+
+    @listener('v')
+    def vi_server_ini(self):
+        w = json.load(open(os.path.join(SERVER_ROOT, self.get_now_text().strip())))
+        data = Task.build_json('',op='get-ini', session='config')
+        res = Comunication.SendOnce(w, data)
+        content = editor(res[2]['reply'])
+        data = Task.build_json('', op="sync-ini", session=args.session, content=content)
+        Stack.run_background(Comunication.SendOnce, w,data)
 
 
 class AppMenu(Stack):
@@ -109,7 +128,7 @@ class AppMenu(Stack):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         w = json.load(open(os.path.join(SERVER_ROOT, ip)))
-        msg = Task.build_json(app,date=t,op='log',lines=300,session=session)
+        msg = Task.build_json(app,date=t,op='log',line=300,session=session)
         code,tag, msg = Comunication.SendOnce(w, msg, loop=loop)
         cc = msg['reply']['log'] + "\n ===============\n" + msg['reply']['err_log']
         TextPanel.Popup(cc, x=self.start_x - self.width - 3, y=self.py + 5, screen=self.screen, exit_keys=[10])
@@ -165,20 +184,6 @@ class AppMenu(Stack):
 
 
 def main():
-    app = Application()    
-    all_config = {i:False  for i in  os.listdir(SERVER_ROOT)}
-    nodes_box = ConfigCheck(all_config, "configs")
-    app.add_widget(nodes_box)
-    conf_file = next(iter(all_config.values()))
-    # if os.path.exists(conf_file):
-    #     with open(conf_file) as fp:
-    #         T = fp.read()
-    #         print(T)
-    #         app.add_widget(TextPanel(T, id="show_config", max_width=20))
-    app.focus("configs")
-    curses.wrapper(app.loop)
-
-def main2():
     app = Application()
     ipm = IpMenu(id='ip')
     sess = AppMenu([],id='sess')
@@ -193,4 +198,4 @@ def main2():
 
 
 if __name__ == "__main__":
-    main2()
+    main()

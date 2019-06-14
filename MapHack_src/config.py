@@ -16,6 +16,7 @@ restart = /usr/local/bin/Seed-node -d start -c /root/.mapper.json
 server_dir = ~/.server_dir
 
 [app]
+whois = apt-get install -y whois
 tree = apt-get install -y tree
 ping = apt-get install -y iputils-ping
 nmap = apt-get install -y nmap
@@ -24,7 +25,7 @@ dirsearch = git clone https://github.com/maurosoria/dirsearch.git /opt/dirsearch
 masscan = apt-get -y install git gcc make libpcap-dev && cd /tmp/ &&  git clone https://github.com/robertdavidgraham/masscan  && cd masscan && make && make install                        
 dirbpy = pip3 install dirbpy
 whatweb = cd /opt/ && apt-get install -y gem ruby-devel && wget https://github.com/urbanadventurer/WhatWeb/archive/v0.4.9.zip -O /opt/whatweb.zip && cd /opt/ && unzip whatweb.zip ; ln -s /opt/WhatWeb-0.4.9/whatweb /usr/local/bin/whatweb                                             
-dnsrecon = pip3 install netaddr dnspython lxml; git clone https://github.com/darkoperator/dnsrecon.git        /opt/dnsrecon && sed -ie 's/env python$/env python3/g' /opt/dnsrecon/dnsrecon.py && ln -s /opt/dnsrecon/dnsrecon.py /usr/local/bin/dnsrecon                                
+dnsrecon = apt-get install -y python-pip && pip install netaddr lxml dnspython ; pip3 install netaddr dnspython lxml; git clone https://github.com/darkoperator/dnsrecon.git        /opt/dnsrecon && sed -ie 's/env python$/env python3/g' /opt/dnsrecon/dnsrecon.py && ln -s /opt/dnsrecon/dnsrecon.py /usr/local/bin/dnsrecon                                
 
 [use]
 tree = tree {ip} {option}
@@ -33,9 +34,10 @@ dirsearch = dirsearch -u {ip} -e {option} --random-agents -s 2
 sqlmap = sqlmap -t {ip} --dbs  {option}
 ping = ping {ip} -c 5
 masscan = masscan {ip}  -p22-10000  --banners --rate 1000                                    
-dirbpy = dirbpy -o https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -u {ip}
+dirbpy = python dirbpy -o https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -u {ip}
 whatweb = whatweb  {option} {ip}
 dnsrecon = dnsrecon {option} -d {ip}
+whois = whois {ip} {option}
 """
     with open(PATH, 'w') as fp:
         fp.write(tmp)

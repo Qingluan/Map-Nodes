@@ -12,9 +12,9 @@ setup(name='x-mroy-13',
     include_package_data=True,
     zip_safe=False,
     packages=find_packages(),
-    install_requires=['termcolor', 'asyncssh'],
+    install_requires=['termcolor', 'asyncssh', 'x_menu'],
     entry_points={
-        'console_scripts': ['Seed-node=MapHack_src.cmd:main']
+        'console_scripts': ['Seed-node=MapHack_src.cmd:main', 'Seed-ui=MapHack_ui.main:main']
     },
 
 )
