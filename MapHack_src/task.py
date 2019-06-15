@@ -57,7 +57,7 @@ class TaskData:
             pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
         
-        if pid.endswith(".log"):
+        if isinstance(pid, str) and pid.endswith(".log"):
             pid_f = pid[:-4] + ".pid" 
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
