@@ -56,7 +56,6 @@ class TaskData:
         L("test:runing:", pid)
         if isinstance(pid, str) and pid.endswith(".log"):
             pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
-            L("pid:", pid_f)
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
                     L("find pid file : %s" % pid_f)
@@ -119,7 +118,7 @@ async def run_shell(shell, stdout=None, background=False):
     if background:
         if stdout:
             stderr = stdout + ".err"
-            pid_file = stdout + ".pid"
+            pid_file = stdout[:-4] + ".pid"
             shell = shell + " >" + stdout + " 2> " + stderr
 
         shell = "nohup " + shell + " &"
@@ -333,6 +332,23 @@ class Task:
             code += 10
         # L(log)
         return code, log
+    
+    async def clear_session(self):
+        if os.path.exists(self.root):
+            if ' ' in self.root or '..' in self.root or '~' in self.root:
+                code = 1
+                res = 'warring do not do this : rm -rf %s' % self.root
+                return code , res
+            if not self.root.startswith('/tmp'):
+                code = 1
+                res = 'warring do not do this : rm -rf %s' % self.root
+                return code , res
+            code, res = await run_shell('rm -rf %s' % self.root, background=False)
+        if self.root.endswith('config'):
+            os.mkdir(self.root)
+        if code == 0:
+            res = 'clear session : %s ' % self.root
+        return code, res
 
     async def clear_task(self, app, session, time):
         assert isinstance(time, str)
@@ -405,6 +421,8 @@ class Task:
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
+        elif op == 'clear-session':
+            code, res = await self.clear_session()
         elif op == 'update':
             code, res = await self.check()
         elif op == 'check':
