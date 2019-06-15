@@ -147,13 +147,14 @@ def main():
 
 
     if args.app:
-        args.op = 'run'
+        # args.op = 'run'
         if len(args.app) == 1:
             target = ''
         else:
             target = args.app[1]
         app = args.app[0]
-        
+        if args.op.strip() == 'install':
+            args.session = 'config'
         data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
@@ -192,8 +193,9 @@ def main():
             app = args.app[0]
         else:
             app = ''
-        if args.op == 'install':
+        if args.op.strip() == 'install':
             args.session = 'config'
+        # L("session:",args.session)
         data = Task.build_json(app,op=args.op, session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
