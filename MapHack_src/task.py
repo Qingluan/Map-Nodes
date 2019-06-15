@@ -322,7 +322,7 @@ class Task:
                         .decode('utf-8','ignore')
         else:
             code += 10
-
+        L(log)
         return code, log
 
     async def clear_task(self, app, session, time):
