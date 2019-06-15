@@ -110,7 +110,7 @@ async def run_command(*args, stdout=None):
 
 async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
-    assert stdout is not None
+    # assert stdout is not None
     log_file = None
     pid_file = None
     if background:
@@ -475,7 +475,9 @@ class Task:
             session = self._data['session']
             app = self._data['app']
             code, res = await run_shell(app)
-
+        else:
+            code = -1 
+            res = 'no such op:%s' % op
 
         return  code, res
     
