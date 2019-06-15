@@ -135,7 +135,7 @@ async def run_shell(shell, stdout=None, background=False):
         if pid_file:
             with open(pid_file, 'w') as fp:
                 fp.write(process.pid)
-            result = stderr.decode().strip()
+        result = stderr.decode().strip()
         L("failed:", result)
     else:
         if log_file and background:
