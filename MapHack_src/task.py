@@ -53,16 +53,18 @@ class TaskData:
  
     @classmethod
     def running(cls, pid):
-        if pid in cls.RDatas:
-            pid = os.path.basename(pid) if '/' in pid else pid
-            pid = cls.get(pid)
-        
+        L("test:runing:", pid)
         if isinstance(pid, str) and pid.endswith(".log"):
             pid_f = pid[:-4] + ".pid" 
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
                     L("find pid file : %s" % pid_f)
                     pid = int(fp.read().strip())
+        if pid in cls.RDatas:
+            pid = os.path.basename(pid) if '/' in pid else pid
+            pid = cls.get(pid)
+        
+        
         if pid and isinstance(pid, int):
             try:
                 os.kill(pid, 0)
