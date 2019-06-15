@@ -192,6 +192,8 @@ def main():
             app = args.app[0]
         else:
             app = ''
+        if args.op == 'install':
+            args.session = 'config'
         data = Task.build_json(app,op=args.op, session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:

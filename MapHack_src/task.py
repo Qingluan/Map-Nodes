@@ -58,8 +58,9 @@ class TaskData:
             pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
-                    L("find pid file : %s" % pid_f)
+                    
                     pid = int(fp.read().strip())
+                    L({pid_f: pid})
         if pid in cls.RDatas:
             pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
@@ -69,8 +70,10 @@ class TaskData:
             try:
                 os.kill(pid, 0)
             except ProcessLookupError:
+                L({pid: False})
                 return False
             else:
+                L({pid: True})
                 return True
         return False
 
@@ -110,7 +113,7 @@ async def run_command(*args, stdout=None):
         result = stdout.decode().strip()
     return process.returncode, result
 
-async def run_shell(shell, stdout=None, background=False):
+async def run_shell(shell, stdout=None, background=False, finished_log_file=FINISHED_LOG_FILE):
     # Create subprocess
     # assert stdout is not None
     log_file = None
@@ -119,8 +122,8 @@ async def run_shell(shell, stdout=None, background=False):
         if stdout:
             stderr = stdout + ".err"
             pid_file = stdout[:-4] + ".pid"
+            shell  += '; echo %s >> %s ' % (pid_file, finished_log_file)
             shell = shell + " >" + stdout + " 2> " + stderr
-
         shell = "nohup " + shell + " &"
         result = 'run in background: %s ' % stdout
         log_file = stdout
