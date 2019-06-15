@@ -56,6 +56,7 @@ class TaskData:
         L("test:runing:", pid)
         if isinstance(pid, str) and pid.endswith(".log"):
             pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
+            L("pid:", pid_f)
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
                     L("find pid file : %s" % pid_f)
