@@ -57,6 +57,12 @@ class TaskData:
             pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
         
+        if pid.endswith(".log"):
+            pid_f = pid[:-4] + ".pid" 
+            if os.path.exists(pid_f):
+                with open(pid_f) as fp:
+                    L("find pid file : %s" % pid_f)
+                    pid = int(fp.read().strip())
         if pid and isinstance(pid, int):
             try:
                 os.kill(pid, 0)
@@ -104,11 +110,13 @@ async def run_command(*args, stdout=None):
 
 async def run_shell(shell, stdout=None, background=False):
     # Create subprocess
-    
+    assert stdout is not None
     log_file = None
+    pid_file = None
     if background:
         if stdout:
             stderr = stdout + ".err"
+            pid_file = stdout + ".pid"
             shell = shell + " >" + stdout + " 2> " + stderr
 
         shell = "nohup " + shell + " &"
@@ -124,6 +132,8 @@ async def run_shell(shell, stdout=None, background=False):
 
     # Progress
     if process.returncode != 0:
+        with open(pid_file, 'w') as fp:
+            fp.write(process.pid)
         result = stderr.decode().strip()
         L("failed:", result)
     else:
@@ -296,6 +306,55 @@ class Task:
                 r.append(res)
         return  c, r
     
+    async def get_sys_log(self):
+        log = {}
+        code = 0
+        line = 100
+        if os.path.exists("/var/log/hack.log"):
+            log_file = "/var/log/hack.log"
+            log['log'] = b64encode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode())\
+                        .decode('utf-8','ignore')
+        else:
+            code += 1
+        if os.path.exists("/var/log/hack-updater.log"):
+            err_log = "/var/log/hack-updater.log"        
+            log['err_log'] = b64encode((await run_shell("tail -n %d %s " % (line,err_log) ))[1].encode())\
+                        .decode('utf-8','ignore')
+        else:
+            code += 10
+
+        return code, log
+
+    async def clear_task(self, app, session, time):
+        assert isinstance(time, str)
+        log_file = '-'.join([app , time]) + ".log"
+        pid_file = '-'.join([app , time]) + ".pid"
+        log_file = os.path.join(self.root, log_file)
+        pid_file = os.path.join(self.root, pid_file)
+        err_log = log_file + ".err"
+        res = {}
+        code = 0
+        if os.path.exists(pid_file):
+            try:
+                pid = int(open(pid_file).read())
+                os.kill(pid, signal.SIGTERM)
+                res['shutdown'] = True
+            except Exception as e:
+                res['err'] = str(e)
+                res['shutdown'] = False
+                code = 1
+        if os.path.exists(log_file):
+            res['log'] = b64encode((await run_shell("cat %s " % (log_file) ))[1].encode())\
+                .decode('utf-8','ignore')
+        else:
+            code += 10
+        if os.path.exists(err_log):
+            res['err_log'] = b64encode((await run_shell("cat %s " % (err_log) ))[1].encode())\
+                .decode('utf-8','ignore')
+        else:
+            code += 100
+        return code, res
+
     async def run(self):
         op = self._data['op']
         L(self._data)
@@ -343,6 +402,18 @@ class Task:
             code, res = await self.check_tasks()
         elif op == 'info':
             code, res = await self.check_info()
+        elif op == 'sys-log':
+            code, res = await self.get_sys_log()
+        elif op == 'clear':
+            assert 'app' in self._data
+            assert 'session' in self._data
+            session = self._data['session']
+            app = self._data.get['app']
+            date = self._data.get('date')
+            if not date:
+                date = datetime.datetime.now()
+                date = "-".join([str(D.year),str(D.month), str(D.day)])
+            code, res = await self.clear_task(app, session, date)
         elif op == 'list':
             session = self._data['session']
             app = self._data.get('app','')

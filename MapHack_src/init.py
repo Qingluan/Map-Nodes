@@ -38,9 +38,11 @@ if  [ $? -eq 0 ];then
         echo "Command python3 could be used already."
              hash pip3 2>/dev/null;
              if [ $? -eq  0 ];then
+                $INS install -y iputils-ping tree whois unzip python-pip
                 exit 0
              else
                 $INS install -y python3-pip python3-setuptools
+                $INS install -y iputils-ping tree whois unzip python-pip
                 exit 0
              fi
     fi
@@ -73,6 +75,7 @@ ln -s /usr/local/python3/bin/pip3 /usr/bin/pip3
 
 echo 'export PATH="$PATH:/usr/local/python3/bin"' >> ~/.bashrc
 
+$INS install -y iputils-ping tree whois unzip python-pip
 """
 
 INSTALL_SCRIPT = """
