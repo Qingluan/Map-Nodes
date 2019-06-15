@@ -144,7 +144,7 @@ async def run_shell(shell, stdout=None, background=False):
             result = stderr.decode().strip()
             if pid_file:
                 with open(pid_file, 'w') as fp:
-                    fp.write(process.pid)
+                    fp.write(str(process.pid))
         result = stdout.decode().strip()
     return process.returncode, result
 
