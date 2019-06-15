@@ -52,10 +52,10 @@ class TaskData:
         return list(cls.Datas.keys())
  
     @classmethod
-    def running(cls, pid):
+    def running(cls, pid, session_root='/tmp/tasks/config'):
         L("test:runing:", pid)
         if isinstance(pid, str) and pid.endswith(".log"):
-            pid_f = pid[:-4] + ".pid" 
+            pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
             if os.path.exists(pid_f):
                 with open(pid_f) as fp:
                     L("find pid file : %s" % pid_f)
@@ -257,7 +257,7 @@ class Task:
         ks = list(self.load_tasks())
         result = {}
         for log in ks:
-            f = TaskData.running(log)
+            f = TaskData.running(log, session_root=self.root)
             result[log] = f
         return 0,result
     
@@ -283,10 +283,10 @@ class Task:
 
         err_log_file = log_file + ".err"
         log = {}
-        running = TaskData.running(log_file)
+        running = TaskData.running(log_file, session_root=self.root)
         running_if_str = '\n[Running]' if running else '\n[Stop]'
-        if not running:
-            TaskData.finish(TaskData.get(log_file))
+        # if not running:
+        #     TaskData.finish(TaskData.get(log_file))
 
         if os.path.exists(log_file):
             #with open(log_file,'rb') as fp:
