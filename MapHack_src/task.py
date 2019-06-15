@@ -9,7 +9,7 @@ from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
 
-
+FINISHED_LOG_FILE = '/tmp/finished_pids'
 class TaskData:
     Datas = {}
     RDatas = {}
