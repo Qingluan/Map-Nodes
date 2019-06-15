@@ -146,6 +146,7 @@ async def run_shell(shell, stdout=None, background=False):
                 with open(pid_file, 'w') as fp:
                     fp.write(str(process.pid))
         result = stdout.decode().strip()
+    L(TaskData.Datas)
     return process.returncode, result
 
 async def check_cmd(command):
