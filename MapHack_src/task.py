@@ -53,7 +53,7 @@ class TaskData:
  
     @classmethod
     def running(cls, pid, session_root='/tmp/tasks/config'):
-        L("test:runing:", pid)
+        
         if isinstance(pid, str) and pid.endswith(".log"):
             pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
             if os.path.exists(pid_f):
@@ -64,16 +64,16 @@ class TaskData:
         if pid in cls.RDatas:
             pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
-        
+            L("test:runing:", pid)
         
         if pid and isinstance(pid, int):
             try:
                 os.kill(pid, 0)
             except ProcessLookupError:
-                L({pid: False})
+                L({pid: False}, 'not run')
                 return False
             else:
-                L({pid: True})
+                L({pid: True}, 'run')
                 return True
         return False
 
@@ -122,11 +122,12 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
         if stdout:
             stderr = stdout + ".err"
             pid_file = stdout[:-4] + ".pid"
-            shell  += '; echo %s >> %s ' % (pid_file, finished_log_file)
+            # shell  += '; echo %s >> %s ' % (pid_file, finished_log_file)
             shell = shell + " >" + stdout + " 2> " + stderr
         shell = "nohup " + shell + " &"
         result = 'run in background: %s ' % stdout
         log_file = stdout
+    L({'run in backgroun':shell})
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
         # stdout must a pipe to be accessible as process.stdout
@@ -258,10 +259,16 @@ class Task:
         
     async def check_tasks(self):
         ks = list(self.load_tasks())
+        # finished_logs = ''
+        # if os.path.exists(FINISHED_LOG_FILE):
+            
+        #     with open(FINISHED_LOG_FILE) as fp:
+        #         finished_logs = fp.read()
         result = {}
         for log in ks:
             f = TaskData.running(log, session_root=self.root)
             result[log] = f
+        # result['finished'] = finished_logs
         return 0,result
     
     async def check_info(self):
