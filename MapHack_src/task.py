@@ -585,6 +585,8 @@ class Task:
         elif op == 'upgrade':
             data = Task.build_json('', op="upgrade-local", session=self._session)
             w = self._pconf
+            if os.path.exists(self.conf['base']['this']):
+                os.remove(self.conf['base']['this'])
             if 'mark' not in self._pconf:
                 w['server'] = 'localhost'
                 w['server_port'] = str(int(w['server_port']) + 1)
