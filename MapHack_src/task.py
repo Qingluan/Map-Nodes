@@ -581,12 +581,13 @@ class Task:
             res = version
             code = 0
         elif op == 'upgrade-local-fi':
+            if os.path.exists(os.path.expanduser('~/.maper.ini')):
+                os.remove(os.path.expanduser('~/.maper.ini'))
             code, res = await run_shell("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")
+
         elif op == 'upgrade':
             data = Task.build_json('', op="upgrade-local", session=self._session)
             w = self._pconf
-            if os.path.exists(os.path.expanduser('~/.maper.ini')):
-                os.remove(os.path.expanduser('~/.maper.ini'))
             if 'mark' not in self._pconf:
                 w['server'] = 'localhost'
                 w['server_port'] = str(int(w['server_port']) + 1)
