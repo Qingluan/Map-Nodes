@@ -20,7 +20,11 @@ def update(port):
     else:
 
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
-    version = os.popen('cd /tmp/Map-Nodes/.git && cat FETCH_HEAD').read().split()[0]
+    try:
+        version = os.popen('cd /tmp/Map-Nodes/.git && cat logs/HEAD').read().split()[1]
+    except IndexError:
+        version = os.popen('cd /tmp/Map-Nodes/.git && cat logs/refs/heads/master').read().split()[1]
+
     if version is None:
         version = time.asctime()
     L("new version:", version)
