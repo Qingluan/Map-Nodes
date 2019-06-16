@@ -85,6 +85,7 @@ cd /tmp/
 if [ -d /tmp/Map-Nodes ];then
     rm -rf /tmp/Map-Nodes;
 fi
+ps aux | grep Seed-node | awk '{print $2}' |xargs kill -9; rm ~/.maper.ini ;
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
 """
@@ -96,7 +97,7 @@ async def init_remote(host, password,port=22, user='root',conf=None):
             result = await conn.run(INSTALL_SCRIPT)
             async with conn.start_sftp_client() as sftp:
                 await sftp.put(conf, '/root/.mapper.json')
-                result = await conn.run("ps aux | grep Seed-node | awk '{print $2}' |xargs kill -9; rm ~/.maper.ini ; Seed-node -c ~/.mapper.json -d start; Seed-node -c ~/.mapper.json -d start --updater")
+                result = await conn.run("Seed-node -c ~/.mapper.json -d start; Seed-node -c ~/.mapper.json -d start --updater")
 
         if result.exit_status == 0:
             return {'code':result.exit_status, "msg":"INIT ok", "ip":host}
