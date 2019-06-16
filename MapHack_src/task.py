@@ -137,11 +137,22 @@ async def run_command(*args, stdout=None):
         result = stdout.decode().strip()
     return process.returncode, result
 
-async def run_shell(shell, stdout=None, background=False, finished_log_file=FINISHED_LOG_FILE):
+async def run_shell(shell, stdout=None, background=False,use_script=False, finished_log_file=FINISHED_LOG_FILE):
     # Create subprocess
     # assert stdout is not None
     log_file = None
     pid_file = None
+    if ';' in shell or '&&' in shell:
+        use_script = True
+    if use_script:
+        with open("/tmp/script.sh", 'w') as fp:
+
+            fp.write("#!/bin/bash\n" + shell)
+            if stdout:
+                fp.write("\n echo %s >>  %s" %(stdout, finished_log_file))
+
+        shell = "bash /tmp/script.sh"
+
     if background:
         if stdout:
             stderr = stdout + ".err"
@@ -152,14 +163,18 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
         result = 'run in background: %s ' % stdout
         log_file = stdout
     L({'run in backgroun':shell})
+
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
         # stdout must a pipe to be accessible as process.stdout
         stderr=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE)
-    # Wait for the subprocess to finish
+
     stdout, stderr = await process.communicate()
     pid = process.pid
+    if background:
+        pid += 1
+
     # Progress
     if process.returncode != 0:
         if pid_file:
@@ -170,7 +185,7 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
     else:
 
         if log_file and background:
-            TaskData.set(pid + 1, log_file)
+            TaskData.set(pid, log_file)
             result = stderr.decode().strip()
             if pid_file:
                 with open(pid_file, 'w') as fp:
@@ -236,7 +251,7 @@ class Task:
                 res += install_str + ";\n"
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["install", str(D.year),str(D.month), str(D.day)]) + ".log")
-        code,res2 = await run_shell(INSTALL, background=True, stdout=log_file)
+        code,res2 = await run_shell(INSTALL, background=True, stdout=log_file, use_script=True)
         return  0, res + '\n---------------------\n' + res2
 
     async def Command(self, line, stdout=None):

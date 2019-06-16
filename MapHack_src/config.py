@@ -11,6 +11,7 @@ else:
 task_root = /tmp/tasks
 level = INFO
 restart = /usr/local/bin/Seed-node -d start -c /root/.mapper.json                   
+FINISHED_LOG_FILE = /tmp/finished_pids
 
 [client]
 server_dir = ~/.server_dir
