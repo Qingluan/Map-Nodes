@@ -82,14 +82,14 @@ $INS install -y iputils-ping tree whois unzip python-pip
 
 INSTALL_SCRIPT = """
 cd /tmp/
-pip3 uninstall -y x-mroy-13;
-if [ -f  $HOME/.maper.ini ];then
-    rm $HOME/.maper.ini;
-fi
 if [ -d /tmp/Map-Nodes ];then
     rm -rf /tmp/Map-Nodes;
 fi
-
+git clone https://github.com/Qingluan/Map-Nodes.git
+cd Map-Nodes && pip3 install . -U
+if [ -f  $HOME/.maper.ini ];then
+    rm $HOME/.maper.ini;
+fi
 if [ -f /var/run/hack.pid ];then
     kill -9 "$(cat /var/run/hack.pid)"
     rm /var/run/hack.pid;
@@ -103,8 +103,6 @@ if [ -f $HOME/.mapper.json ];then
     rm $HOME/.mapper.json;
     rm $HOME/.maper.ini;
 fi
-git clone https://github.com/Qingluan/Map-Nodes.git
-cd Map-Nodes && pip3 install . -U
 """
 
 async def init_remote(host, password,port=22, user='root',conf=None):
