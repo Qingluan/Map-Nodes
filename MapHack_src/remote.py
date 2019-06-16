@@ -204,7 +204,7 @@ async def test_con(conf, msg,loop, no_read=False):
     if no_read:
         return 0,None,{'msg':'no wait', 'ip':conf['server'], 'code':0}
     try:
-        code, t, data = await asyncio.wait_for(con.recive(), 12)
+        code, t, data = await asyncio.wait_for(con.recive(), 20)
         if isinstance(data,dict):
             data['ip'] = conf['server']
             data['code'] = code
