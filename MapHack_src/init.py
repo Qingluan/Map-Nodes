@@ -98,6 +98,9 @@ if [ -f /var/run/hack-updater.pid ];then
     rm /var/run/hack-updater.pid;
 fi
 ps aux | grep Seed | awk '{print $2}' |xargs kill -9;
+if [ -f $HOME/.mapper.json ];then
+    rm $HOME/.mapper.json;
+fi
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
 """
