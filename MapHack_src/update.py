@@ -25,8 +25,8 @@ def update(port):
     except IndexError:
         version = os.popen('cd /tmp/Map-Nodes/.git && cat logs/refs/heads/master').read().split()[1]
 
-    if os.path.exists(os.path.expanduser('~/.maper.ini')):
-        os.remove(os.path.expanduser('~/.maper.ini'))
+    # if os.path.exists(os.path.expanduser('~/.maper.ini')):
+    #     os.remove(os.path.expanduser('~/.maper.ini'))
     config = get_local_config()
     if version is None:
         version = time.asctime()
