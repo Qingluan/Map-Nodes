@@ -275,6 +275,8 @@ class Task:
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["uninstall", str(D.year),str(D.month), str(D.day)]) + ".log")
         code,res = await run_shell(CLEAR, background=True, stdout=log_file, use_script=True)
+        if not res:
+            res = CLEAR
         return code, res
 
     async def Command(self, line, stdout=None):
