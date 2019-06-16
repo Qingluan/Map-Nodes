@@ -159,7 +159,7 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
         stdout=asyncio.subprocess.PIPE)
     # Wait for the subprocess to finish
     stdout, stderr = await process.communicate()
-
+    pid = process.pid
     # Progress
     if process.returncode != 0:
         if pid_file:
@@ -168,8 +168,8 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
         result = stderr.decode().strip()
         L("failed:", result)
     else:
+
         if log_file and background:
-            pid = process.pid
             TaskData.set(pid + 1, log_file)
             result = stderr.decode().strip()
             if pid_file:
@@ -177,7 +177,8 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
                     fp.write(str(process.pid + 1))
         result = stdout.decode().strip()
         if not result:
-            result = str(pid) + ":" + log_file
+            if pid:
+                result = str(pid) + ":" + log_file
     # L(TaskData.RDatas)
     return process.returncode, result
 
@@ -235,8 +236,8 @@ class Task:
                 res += install_str + ";\n"
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["install", str(D.year),str(D.month), str(D.day)]) + ".log")
-        await run_shell(INSTALL, background=True, stdout=log_file)
-        return  0, res + '\ncheck ok'
+        code,res2 = await run_shell(INSTALL, background=True, stdout=log_file)
+        return  0, res + '\n---------------------\n' + res2
 
     async def Command(self, line, stdout=None):
         lines = [i.split() for i in  line.split("&&")]
