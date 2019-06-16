@@ -24,11 +24,16 @@ def ip2geo(ip):
 
 def select(countr_or_ip):
     countr_or_ip = countr_or_ip.lower()
+
     if re.match('^\d{1,3}', countr_or_ip):
         for i in os.listdir(SERVER_DIR):
             if i.startswith(countr_or_ip):
                 with open(os.path.join(SERVER_DIR, i)) as fp:
                     yield json.load(fp)
+    elif countr_or_ip == ".":
+        for i in os.listdir(SERVER_DIR):
+            with open(os.path.join(SERVER_DIR, i)) as fp:
+                yield json.load(fp)
     else:
         for i in os.listdir(SERVER_DIR):
             country = ip2geo(i).lower()

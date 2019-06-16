@@ -7,6 +7,7 @@ from x_menu_src.log import log
 from MapHack_src.config import get_local_config
 from MapHack_src.task import Task
 from MapHack_src.remote import Comunication
+from MapHack_src.selector import build_tasks, run_tasks, select, pull_all_ini
 import json
 import time
 import tempfile
@@ -184,6 +185,9 @@ class AppMenu(Stack):
 
 
 def main():
+    confs = list(select(''))
+    pull_all_ini(confs)
+
     app = Application()
     ipm = IpMenu(id='ip')
     sess = AppMenu([],id='sess')
