@@ -8,7 +8,24 @@ from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
+HELP = """
+optional arguments:
+  run -a [app target] -o [option]          run app [default]
+  install  -a [app] -s [session]           install app
+  ps -s [session]                          show task status in session
+  tree                                     show all log tree
+  log -a [app] -s [session]                show log content in session and app
+  cl -s [session]                          clear session log and session task record
+  cla                                      clear all session's log and task records
+  kill -a [app] -s [session]               kill task in session with running app , and get log
 
+  info                                     get info of server
+  sys-log                                  get server's log
+
+  upgrade                                  upgrade from git
+  test                                     test if config file is ok and get server's ifconfig
+
+"""
 FINISHED_LOG_FILE = '/tmp/finished_pids'
 class TaskData:
     Datas = {}
@@ -22,7 +39,6 @@ class TaskData:
         if pid in cls.Datas:
             return cls.Datas.get(pid)
         elif pid in cls.RDatas:
-            pid = os.path.basename(pid) if '/' in pid else pid
             return cls.RDatas[pid]
 
     @classmethod
@@ -39,13 +55,20 @@ class TaskData:
 
     @classmethod
     def set(cls, pid, log_file):
-        log_file = os.path.basename(log_file) if '/' in log_file else log_file
+        log_file = log_file
         cls.Datas[pid] = log_file
         cls.RDatas[log_file] = pid
 
     @classmethod
     def logs(cls):
         return list(cls.RDatas.keys())
+
+    @classmethod
+    def clear_session(cls, session):
+        ks = list(cls.RDatas.keys())
+        for log in ks:
+            if log.startswith(session):
+                cls.finish(log)
 
     @classmethod
     def pids(cls):
@@ -62,7 +85,6 @@ class TaskData:
                     pid = int(fp.read().strip())
                     L({pid_f: pid})
         if pid in cls.RDatas:
-            pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
             L("test:runing:", pid)
         
@@ -358,6 +380,19 @@ class Task:
             os.mkdir(self.root)
         if code == 0:
             res = 'clear session : %s ' % self.root
+            TaskData.clear_session(self.root)
+        return code, res
+
+    async def clear_all(self):
+        TaskData.RDatas = {}
+        TaskData.Datas = {}
+        root = self.conf['task_root']
+        code, res = await run_shell('rm -rf %s ' % root, background=False)
+        if code == 0:
+            code, res = await run_shell('mkdir %s ' % root, background=False)
+            code, res = await run_shell('mkdir %s/config ' % root, background=False)
+        if code == 0:
+            res = 'clear all session and log'
         return code, res
 
     async def clear_task(self, app, session, time):
@@ -431,17 +466,19 @@ class Task:
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
-        elif op == 'clear-session':
+        elif op == 'cl':
             code, res = await self.clear_session()
+        elif op == 'cla':    
+            code, res = await self.clear_all()
         elif op == 'update':
             code, res = await self.check()
-        elif op == 'check':
+        elif op == 'ps':
             code, res = await self.check_tasks()
         elif op == 'info':
             code, res = await self.check_info()
         elif op == 'sys-log':
             code, res = await self.get_sys_log()
-        elif op == 'clear':
+        elif op == 'kill':
             assert 'app' in self._data
             assert 'session' in self._data
             session = self._data['session']
@@ -514,7 +551,7 @@ class Task:
             code, res = await run_shell(app)
         else:
             code = -1 
-            res = 'no such op:%s' % op
+            res = HELP
 
         return  code, res
     
