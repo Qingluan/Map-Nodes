@@ -236,7 +236,7 @@ class Task:
             L("may be centos , use : yum")
             res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
-        INSTALL = ''
+        INSTALL = 'dpkg --configure -a ;\nif [ -f /var/lib/dpkg/lock ];then rm /var/lib/dpkg/lock;fi \n if [ -f /var/cache/apt/archives/lock ];then rm /var/cache/apt/archives/lock ;fi;\n'
         for app in apps:
             s = await check_cmd(app)
             if not s:
