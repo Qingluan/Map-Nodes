@@ -3,10 +3,8 @@ import logging
 import configparser
 
 PATH = os.path.expanduser("~/.maper.ini")
-if os.path.exists(PATH):
-    pass
-else:
-    tmp = """
+
+tmp = """
 [base]
 this = ~/.maper.ini
 task_root = /tmp/tasks
@@ -42,12 +40,19 @@ whatweb = whatweb  {option} {ip}
 dnsrecon = dnsrecon {option} -d {ip}
 whois = whois {ip} {option}
 """
+
+if os.path.exists(PATH):
+    pass
+else:
     with open(PATH, 'w') as fp:
         fp.write(tmp)
 
 def get_local_config():
 
     config = configparser.ConfigParser()
+    if not os.path.exists(PATH):
+        with open(PATH, 'w') as fp:
+            fp.write(tmp)
     config.read(PATH)
     task_root = config['base']['task_root']
     if not os.path.exists(task_root):
