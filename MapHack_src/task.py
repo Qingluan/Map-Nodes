@@ -12,6 +12,7 @@ HELP = """
 optional arguments:
   run -a [app target] -o [option]          run app [default]
   install  -a [app] -s [session]           install app
+
   ps -s [session]                          show task status in session
   tree                                     show all log tree
   log -a [app] -s [session]                show log content in session and app
@@ -24,7 +25,8 @@ optional arguments:
 
   upgrade                                  upgrade from git
   test                                     test if config file is ok and get server's ifconfig
-
+  ls                                       list all app in config
+  update                                   to install all app in list.
 """
 FINISHED_LOG_FILE = '/tmp/finished_pids'
 class TaskData:
