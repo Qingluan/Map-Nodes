@@ -388,7 +388,7 @@ class Task:
     async def clear_all(self):
         TaskData.RDatas = {}
         TaskData.Datas = {}
-        root = self.conf['task_root']
+        root = self.conf['base']['task_root']
         code, res = await run_shell('rm -rf %s ' % root, background=False)
         if code == 0:
             code, res = await run_shell('mkdir %s ' % root, background=False)

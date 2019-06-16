@@ -213,7 +213,7 @@ def main():
         sys.exit(0)
 
     if args.remote_help:
-        data = Task.build_json('',op='list', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
+        data = Task.build_json('',op='ls', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])
