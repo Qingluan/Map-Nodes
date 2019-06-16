@@ -14,6 +14,7 @@ restart = /usr/local/bin/Seed-node -d start -c /root/.mapper.json
 
 [client]
 server_dir = ~/.server_dir
+server_ini = ~/.server_inis
 
 [app]
 whois = apt-get install -y whois
@@ -51,6 +52,13 @@ def get_local_config():
         os.mkdir(task_root)
     if not os.path.exists(os.path.join(config['base']['task_root'], 'config')):
         os.mkdir(os.path.join(config['base']['task_root'],'config'))
+    for k in config['client'].keys():
+        p = os.path.expanduser(config['client'][k])
+        try:
+            if not os.path.exists(p):
+                os.mkdir(p)
+        except Exception as e:
+            logging.error(e)
     logging.basicConfig(level=getattr(logging,config['base']['level']))
     return  config
 
@@ -94,3 +102,4 @@ def get_ini():
         return fp.read()
 
 
+local_conf = get_local_config()

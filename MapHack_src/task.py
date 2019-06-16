@@ -176,7 +176,9 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
                 with open(pid_file, 'w') as fp:
                     fp.write(str(process.pid + 1))
         result = stdout.decode().strip()
-    L(TaskData.RDatas)
+        if not result:
+            result = str(pid) + ":" + log_file
+    # L(TaskData.RDatas)
     return process.returncode, result
 
 async def check_cmd(command):
@@ -218,6 +220,7 @@ class Task:
             L("may be centos , use : yum")
             res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
+        fs = []
         for app in apps:
             s = await check_cmd(app)
             if not s:
@@ -229,14 +232,19 @@ class Task:
 
                 D = datetime.datetime.now()
                 log_file = os.path.join(self.root_config, "-".join([app, str(D.year),str(D.month), str(D.day)]) + ".log")
-                code, res2 = await run_shell(install_str, background=True, stdout=log_file)
-                res += res2
-                # for code, res in res:
-                if code != 0:
-                    logging.error("install %s failed" % app)
-                    if app in os.listdir('/tmp/') and 'git' in install_str:
-                        await run_shell("rm -rf /tmp/" + app.strip())
-                    return  1, res + "\ninstall %s failed || %s" % (app, res)
+                run_f = run_shell(install_str, background=True, stdout=log_file)
+                fs.append(run_f)
+                res += install_str + "\n"
+
+                # code, res2 = await 
+                # res += res2
+                # # for code, res in res:
+                # if code != 0:
+                #     logging.error("install %s failed" % app)
+                #     if app in os.listdir('/tmp/') and 'git' in install_str:
+                #         await run_shell("rm -rf /tmp/" + app.strip())
+                #     return  1, res + "\ninstall %s failed || %s" % (app, res)
+        await asyncio.get_event_loop().gather(*fs)
         return  0, res + '\ncheck ok'
 
     async def Command(self, line, stdout=None):
