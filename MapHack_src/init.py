@@ -93,8 +93,8 @@ if [ -f /var/run/hack.pid ];then
     kill -9 "$(cat /var/run/hack.pid)"
     rm /var/run/hack.pid;
 fi
-if [ -f /var/run/hack-updater.pid; ];then
-    kill -9 "$(cat /var/run/hack-updater.pid)"
+if [ -f /var/run/hack-updater.pid ];then
+    kill -9 "$(cat /var/run/hack-updater.pid)";
     rm /var/run/hack-updater.pid;
 fi
 ps aux | grep Seed | awk '{print $2}' |xargs kill -9;
