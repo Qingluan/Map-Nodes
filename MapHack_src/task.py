@@ -140,17 +140,17 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
     if process.returncode != 0:
         if pid_file:
             with open(pid_file, 'w') as fp:
-                fp.write(process.pid)
+                fp.write(str(process.pid))
         result = stderr.decode().strip()
         L("failed:", result)
     else:
         if log_file and background:
             pid = process.pid
-            TaskData.set(pid, log_file)
+            TaskData.set(pid + 1, log_file)
             result = stderr.decode().strip()
             if pid_file:
                 with open(pid_file, 'w') as fp:
-                    fp.write(str(process.pid))
+                    fp.write(str(process.pid + 1))
         result = stdout.decode().strip()
     L(TaskData.RDatas)
     return process.returncode, result
