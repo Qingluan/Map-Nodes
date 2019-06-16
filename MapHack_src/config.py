@@ -8,6 +8,7 @@ if os.path.exists(PATH):
 else:
     tmp = """
 [base]
+this = ~/.maper.ini
 task_root = /tmp/tasks
 level = INFO
 restart = /usr/local/bin/Seed-node -d start -c /root/.mapper.json                   

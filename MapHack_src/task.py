@@ -272,6 +272,10 @@ class Task:
             if os.path.exists("/opt/%s" % app):
                 clear_str += '\n rm -rf /opt/%s ;' % app 
             CLEAR += clear_str  + "\n"
+
+        if os.path.exists(os.path.expanduser("~/.maper.ini")):
+            CLEAR += '\n rm %s' % os.path.expanduser("~/.maper.ini")
+
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["uninstall", str(D.year),str(D.month), str(D.day)]) + ".log")
         code,res = await run_shell(CLEAR, background=True, stdout=log_file, use_script=True)
