@@ -235,8 +235,7 @@ class Task:
                 res += install_str + ";\n"
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["install", str(D.year),str(D.month), str(D.day)]) + ".log")
-        run_f = run_shell(INSTALL, background=True, stdout=log_file)
-        await asyncio.get_event_loop().gather(run_f)
+        await run_shell(INSTALL, background=True, stdout=log_file)
         return  0, res + '\ncheck ok'
 
     async def Command(self, line, stdout=None):
