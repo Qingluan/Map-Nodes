@@ -88,13 +88,16 @@ fi
 if [ -d /tmp/Map-Nodes ];then
     rm -rf /tmp/Map-Nodes;
 fi
-ps aux | grep Seed-node | awk '{print $2}' |xargs kill -9;
+
 if [ -f /var/run/hack.pid ];then
+    kill -9 "$(cat /var/run/hack.pid)"
     rm /var/run/hack.pid;
 fi
 if [ -f /var/run/hack-updater.pid; ];then
+    kill -9 "$(cat /var/run/hack-updater.pid)"
     rm /var/run/hack-updater.pid;
 fi
+ps aux | grep Seed | awk '{print $2}' |xargs kill -9;
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
 """
