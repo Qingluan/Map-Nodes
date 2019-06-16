@@ -26,7 +26,9 @@ optional arguments:
   upgrade                                  upgrade from git
   test                                     test if config file is ok and get server's ifconfig
   ls                                       list all app in config
+  
   update                                   to install all app in list.
+  clean                                    clear all installed app .
 """
 FINISHED_LOG_FILE = '/tmp/finished_pids'
 class TaskData:
@@ -145,13 +147,17 @@ async def run_shell(shell, stdout=None, background=False,use_script=False, finis
     if ';' in shell or '&&' in shell:
         use_script = True
     if use_script:
-        with open("/tmp/script.sh", 'w') as fp:
+        exe_script = "/tmp/script.sh"
+        if os.path.exists(exe_script):
+            exe_script = '/tmp/%s.sh' % (os.urandom(6).hex())
+
+        with open(exe_script, 'w') as fp:
 
             fp.write("#!/bin/bash\n" + shell)
             if stdout:
-                fp.write("\n echo %s >>  %s" %(stdout, finished_log_file))
+                fp.write("\n echo %s >>  %s ; rm %s" %(stdout, finished_log_file, exe_script))
 
-        shell = "bash /tmp/script.sh"
+        shell = "bash " + exe_script
 
     if background:
         if stdout:
