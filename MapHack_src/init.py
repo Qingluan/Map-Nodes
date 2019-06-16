@@ -82,6 +82,7 @@ $INS install -y iputils-ping tree whois unzip python-pip
 
 INSTALL_SCRIPT = """
 cd /tmp/
+pip3 uninstall -y x-mroy-13;
 if [ -f  $HOME/.maper.ini ];then
     rm $HOME/.maper.ini;
 fi
@@ -101,7 +102,6 @@ ps aux | grep Seed | awk '{print $2}' |xargs kill -9;
 if [ -f $HOME/.mapper.json ];then
     rm $HOME/.mapper.json;
     rm $HOME/.maper.ini;
-    pip3 uninstall -y x-mroy-13;
 fi
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
