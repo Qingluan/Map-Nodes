@@ -272,12 +272,16 @@ def main():
         app = []
         target = []
 
-    msgs = list(build_tasks(confs, apps=app, op=args.op, targets=target, session=args.session,date=args.time, background=args.not_background, line=50))
+    msgs = list(build_tasks(confs, apps=app, op=args.op, targets=target,option=args.option, session=args.session,date=args.time, background=args.not_background, line=50))
     for r in run_tasks(confs, msgs):
         if 'tree' in r[2]:
             L(r[2]['tree'])
         else:
-            L(r[2])
+            
+            if 'reply' in r[2] and isinstance(r[2]['reply'], dict):
+                L(r[2]['ip'],r[2]['reply'])
+            else:
+                L(r[2])
 
     
 

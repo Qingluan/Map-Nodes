@@ -220,7 +220,7 @@ class Task:
             L("may be centos , use : yum")
             res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
-        fs = []
+        INSTALL = ''
         for app in apps:
             s = await check_cmd(app)
             if not s:
@@ -230,21 +230,13 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                D = datetime.datetime.now()
-                log_file = os.path.join(self.root_config, "-".join([app, str(D.year),str(D.month), str(D.day)]) + ".log")
-                run_f = run_shell(install_str, background=True, stdout=log_file)
                 fs.append(run_f)
-                res += install_str + "\n"
-
-                # code, res2 = await 
-                # res += res2
-                # # for code, res in res:
-                # if code != 0:
-                #     logging.error("install %s failed" % app)
-                #     if app in os.listdir('/tmp/') and 'git' in install_str:
-                #         await run_shell("rm -rf /tmp/" + app.strip())
-                #     return  1, res + "\ninstall %s failed || %s" % (app, res)
-        await asyncio.get_event_loop().gather(*fs)
+                INSTALL += install_str + ";"
+                res += install_str + ";\n"
+        D = datetime.datetime.now()
+        log_file = os.path.join(self.root_config, "-".join(["install", str(D.year),str(D.month), str(D.day)]) + ".log")
+        run_f = run_shell(INSTALL, background=True, stdout=log_file)
+        await asyncio.get_event_loop().gather(run_f)
         return  0, res + '\ncheck ok'
 
     async def Command(self, line, stdout=None):

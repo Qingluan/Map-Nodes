@@ -63,7 +63,7 @@ def pull_all_ini(confs):
 
 
 
-def build_tasks(confs, targets=[], apps=[], op='run', session='default', background=True, **kargs):
+def build_tasks(confs, targets=[], apps=[], op='run',option='', session='default', background=True, **kargs):
     if op == 'run':
         assert isinstance(apps, list)
         assert len(apps) > 0
@@ -72,22 +72,22 @@ def build_tasks(confs, targets=[], apps=[], op='run', session='default', backgro
         if len(apps) > 1:
             for app in apps:
                 for target in targets:
-                    yield Task.build_json(app, op=op, session=session,ip=target, backgroun=background, option='', **kargs)
+                    yield Task.build_json(app, op=op, session=session,ip=target, backgroun=background, option=option, **kargs)
         else:
             for i in range(len(confs)):
-                yield Task.build_json(apps[0], op=op, session=session,ip=targets[0], backgroun=background, option='', **kargs)
+                yield Task.build_json(apps[0], op=op, session=session,ip=targets[0], backgroun=background, option=option, **kargs)
     else:
         if apps:
             if len(apps) > 1:
                 for i in range(len(confs)):
                     for app in apps:
-                        yield Task.build_json(app, op=op, session=session, backgroun=background, option='', **kargs)
+                        yield Task.build_json(app, op=op, session=session, backgroun=background, option=option, **kargs)
             else:
                 for i in range(len(confs)):
-                    yield Task.build_json(apps[0], op=op, session=session, backgroun=background, option='', **kargs)
+                    yield Task.build_json(apps[0], op=op, session=session, backgroun=background, option=option, **kargs)
         else:
             for i in range(len(confs)):
-                yield Task.build_json('', op=op, session=session, backgroun=background, option='', **kargs)
+                yield Task.build_json('', op=op, session=session, backgroun=background, option=option, **kargs)
 
 
 def run_tasks(confs, msgs, callback=None, random=True):
