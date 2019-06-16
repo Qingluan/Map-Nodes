@@ -51,6 +51,7 @@ def get_local_config():
 
     config = configparser.ConfigParser()
     if not os.path.exists(PATH):
+        logging.error("no ini file")
         with open(PATH, 'w') as fp:
             fp.write(tmp)
     config.read(PATH)
