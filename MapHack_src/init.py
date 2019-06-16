@@ -82,10 +82,14 @@ $INS install -y iputils-ping tree whois unzip python-pip
 
 INSTALL_SCRIPT = """
 cd /tmp/
+if [ -f  $HOME/.maper.ini ];
+    rm $HOME/.maper.ini;
+fi
+
 if [ -d /tmp/Map-Nodes ];then
     rm -rf /tmp/Map-Nodes;
 fi
-ps aux | grep Seed-node | awk '{print $2}' |xargs kill -9; rm ~/.maper.ini ;
+ps aux | grep Seed-node | awk '{print $2}' |xargs kill -9;
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
 """
