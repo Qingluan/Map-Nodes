@@ -99,10 +99,14 @@ async def init_remote(host, password,port=22, user='root',conf=None):
         result = await conn.run(INIT_SCRIPT)
         if result.exit_status == 0:
             result = await conn.run(INSTALL_SCRIPT)
+            if result.exit_status != 0:
+                L(result.stderr)
+
             async with conn.start_sftp_client() as sftp:
                 await sftp.put(conf, '/root/.mapper.json')
                 result = await conn.run("Seed-node -c ~/.mapper.json -d start; Seed-node -c ~/.mapper.json -d start --updater")
-
+                if result.exit_status != 0:
+                    L(result.stderr)
         if result.exit_status == 0:
             return {'code':result.exit_status, "msg":"INIT ok", "ip":host}
         return {'code':result.exit_status, "msg":"error", "ip":host}
