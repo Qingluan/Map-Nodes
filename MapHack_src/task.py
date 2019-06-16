@@ -271,7 +271,7 @@ class Task:
                 clear_str += '\n rm /usr/local/bin/%s;' % app
             if os.path.exists("/opt/%s" % app):
                 clear_str += '\n rm -rf /opt/%s ;' % app 
-            CLEAR += clear_str  + " ;\n"
+            CLEAR += clear_str  + "\n"
         D = datetime.datetime.now()
         log_file = os.path.join(self.root_config, "-".join(["uninstall", str(D.year),str(D.month), str(D.day)]) + ".log")
         code,res = await run_shell(CLEAR, background=True, stdout=log_file, use_script=True)
