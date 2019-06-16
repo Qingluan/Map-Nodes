@@ -230,7 +230,7 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                fs.append(run_f)
+                # fs.append(run_f)
                 INSTALL += install_str + ";"
                 res += install_str + ";\n"
         D = datetime.datetime.now()
