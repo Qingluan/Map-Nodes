@@ -236,7 +236,7 @@ class Task:
             L("may be centos , use : yum")
             res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
-        INSTALL = 'ps aux | grep "(apt-get|dpkg)" | grep -v "grep" | awk \'{print $2 }\' | xargs kill -9  ; dpkg --configure -a ;\nif [ -f /var/lib/dpkg/lock ];then rm /var/lib/dpkg/lock;fi \n if [ -f /var/cache/apt/archives/lock ];then rm /var/cache/apt/archives/lock ;fi ; apt-get update -y && apt --fix-broken install -y && apt-get install -f -y &&  apt remove -y && mv /var/lib/dpkg/info/polar-bookshelf.* /tmp \n'
+        INSTALL = 'ps aux | grep "(apt-get|dpkg)" | grep -v "grep" | awk \'{print $2 }\' | xargs kill -9  ; dpkg --configure -a ;\nif [ -f /var/lib/dpkg/lock ];then rm /var/lib/dpkg/lock;fi \n if [ -f /var/cache/apt/archives/lock ];then rm /var/cache/apt/archives/lock ;fi ; apt-get update -y && apt --fix-broken install -y ; apt-get install -f -y ;  apt remove -y ; mv /var/lib/dpkg/info/polar-bookshelf.* /tmp \n'
         for app in apps:
             s = await check_cmd(app)
             if not s:
