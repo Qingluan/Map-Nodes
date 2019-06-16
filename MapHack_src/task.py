@@ -178,7 +178,7 @@ async def run_shell(shell, stdout=None, background=False, finished_log_file=FINI
         result = stdout.decode().strip()
         if not result:
             if pid:
-                result = str(pid) + ":" + log_file
+                result = str(pid) + ":" + str(log_file)
     # L(TaskData.RDatas)
     return process.returncode, result
 
