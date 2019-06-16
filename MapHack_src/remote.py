@@ -217,6 +217,8 @@ async def test_con(conf, msg,loop, no_read=False):
             return code, t, 'no data recive you can check version by --op info'
         if 'reply' not in data:
             return code,t,data
+        if not data['reply']:
+            return code, t ,{'ip':conf['sever'], 'reply':'', 'code' :0 }
         if 'log' in data['reply']:
             try:
                 data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
