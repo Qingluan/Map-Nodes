@@ -254,6 +254,23 @@ class Task:
         code,res2 = await run_shell(INSTALL, background=True, stdout=log_file, use_script=True)
         return  0, res + '\n---------------------\n' + res2
 
+    async def uninstall(self):
+        apps = list(self.conf['app'].keys())
+        CLEAR = ''
+        for app in apps:
+            
+            clear_str = ' apt remove -y %s ; pip3 uninstall -y %s ; pip uninstall -y %s ;' % (app, app, app)
+            install_str = self.__class__.conf['app'][app]
+            if 'ln -s' in install_str:
+                clear_str += '\n rm /usr/local/bin/%s;' % app
+            if os.path.exists("/opt/%s" % app):
+                clear_str += '\n rm -rf /opt/%s ;' % app 
+            CLEAR += clear_str  + " ;\n"
+        D = datetime.datetime.now()
+        log_file = os.path.join(self.root_config, "-".join(["uninstall", str(D.year),str(D.month), str(D.day)]) + ".log")
+        code,res = await run_shell(CLEAR, background=True, stdout=log_file, use_script=True)
+        return code, res
+
     async def Command(self, line, stdout=None):
         lines = [i.split() for i in  line.split("&&")]
         res = []
@@ -461,6 +478,8 @@ class Task:
             else:
                 D = date
             code,res = await self.get_app_log(app,line=line, date=D)        
+        elif op == 'clean':
+            code, res = await self.uninstall()
         elif op == 'install':
             app = self._data['app']
             try:
