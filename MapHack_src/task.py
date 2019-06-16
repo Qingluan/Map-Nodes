@@ -490,7 +490,7 @@ class Task:
                 date = datetime.datetime.now()
                 date = "-".join([str(D.year),str(D.month), str(D.day)])
             code, res = await self.clear_task(app, session, date)
-        elif op == 'list':
+        elif op == 'ls':
             session = self._data['session']
             app = self._data.get('app','')
             log_dir = self.root
