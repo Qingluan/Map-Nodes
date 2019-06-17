@@ -54,7 +54,7 @@ class IpMenu(Stack):
         data = Task.build_json('',op='get-ini', session='config')
         res = Comunication.SendOnce(w, data)
         content = editor(res[2]['reply'])
-        data = Task.build_json('', op="sync-ini", session=args.session, content=content)
+        data = Task.build_json('', op="sync-ini", session='config', content=content)
         Stack.run_background(Comunication.SendOnce, w,data)
 
 
