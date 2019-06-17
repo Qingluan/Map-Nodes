@@ -25,10 +25,12 @@ else
         yum update -y
         yum -y install  net-tools
         yum -y install zlib1g-dev bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+        yum -y install python36
         INS=yum
     fi
 fi
 
+$INS install -y python3-pip
 
 hash python3 2>/dev/null
 if  [ $? -eq 0 ];then
