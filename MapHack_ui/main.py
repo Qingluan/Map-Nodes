@@ -16,6 +16,9 @@ from subprocess import call
 
 CONF = get_local_config()
 SERVER_ROOT = os.path.expanduser(CONF['client']['server_dir'])
+SESSION_ROOT = "/tmp/sesisons/"
+if not  os.path.exists(SESSION_ROOT):
+    os.mkdir(SESSION_ROOT)
 
 def editor(content):
     EDITOR = os.environ.get('EDITOR','vim') #that easy!
@@ -33,6 +36,7 @@ class IpMenu(Stack):
         super().__init__(ips,*args, **kargs)
 
     def show_log(self, ip ):
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         w = json.load(open(os.path.join(SERVER_ROOT, ip)))

@@ -171,6 +171,10 @@ def init_from_db(db_file, country_or_ip):
             if re.match(r'^\d{1,3}',country_or_ip):
                 servers = db.execute("select host,passwd,port,user from  Host where host like '%{ip}%'".format(ip=country_or_ip)).fetchall()
                 [L({'ip':i[0], 'country':ip2geo(i[0])}) for i in servers]
+            elif country_or_ip == '.':
+                servers = db.execute("select host,passwd,port,user from  Host").fetchall()
+                [L({'ip':i[0], 'country':ip2geo(i[0])}) for i in servers]
+
             else:
                 servers = []
                 for i in db.execute("select host,passwd,port,user from  Host").fetchall():
