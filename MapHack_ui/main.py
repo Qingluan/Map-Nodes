@@ -47,6 +47,7 @@ def ShowFi(context):
 class IpMenu(Stack):
     all_ips = None
     infos = {}
+    sessions = None
     def __init__(self, *args, **kargs):
 
         ips = os.listdir(SERVER_ROOT)
@@ -64,18 +65,11 @@ class IpMenu(Stack):
             log(msg)
             sessions = msg['reply']['session']
         else:
-            session_file = os.path.join(SESSION_ROOT, ip)
-            if os.path.exists(session_file):
-                with open(session_file) as fp:
-                    sessions = [i.strip() for i in fp if i.strip()]
-                    config = configparser.ConfigParser()
-                    filenames = os.path.join(SERVER_INI, ip)
-                    if os.path.exists(filenames):
-                        config.read(filenames)
-                        AppMenu.apps = list(config['use'].keys())
-                    else:
-                        AppMenu.apps = []
-
+            
+            if ip in IpMenu.infos:
+                AppMenu.apps = IpMenu.infos[ip]['app']
+                sessions = IpMenu.infos[ip]['session']
+                
             else:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
@@ -89,12 +83,16 @@ class IpMenu(Stack):
 
 
     def update_when_cursor_change(self, item, ch):
-        if ch == 'l':
-            self.show_log(item)
+        # if ch == 'l':
+        self.show_log(item)
 
     @listener('r')
     def refresh(self):
         self.__class__.Refresh(self)
+        ip = self.get_now_text()
+        log(IpMenu.infos)
+        session = IpMenu.infos[ip]['session']
+        AppMenu.from_res(ip, session)
 
     @listener('v')
     def vi_server_ini(self):
@@ -107,15 +105,20 @@ class IpMenu(Stack):
 
     @classmethod
     def Refresh(cls, context):
-        ips = cls.all_ips if cls.all_ips else []
-        confs = select('.')
-        msgs = build_tasks(confs, op='info', session='config')
-        Show("wait ... sync all infos", context)
-        for code,tag, res in run_tasks(confs, msgs):
-            if code == 0:
-                ip = res['ip']
-                cls.infos[ip] = res
-        ShowFi(context)
+        try:
+            ips = cls.all_ips if cls.all_ips else []
+            confs = list(select('.'))
+            msgs = list(build_tasks(confs, op='info', session='config'))
+            Show("wait ... sync all infos", context)
+            for code,tag, res in run_tasks(confs, msgs):
+                if code == 0:
+                    ip = res['ip']
+                    cls.infos[ip] = res['reply']
+            with open("/tmp/tmp_session_info.json", 'w') as fp:
+                json.dump(cls.infos, fp)
+            ShowFi(context)
+        except Exception as e:
+            log(str(e))
 
 
 class AppMenu(Stack):
@@ -199,7 +202,7 @@ class AppMenu(Stack):
         TextPanel.Popup(cc, x=self.start_x - self.width - 3, y=self.py + 5, screen=self.screen, exit_keys=[10])
         TextPanel.Cl()
         self.Redraw()
-
+        ShowFi(self)
 
     @classmethod
     def from_res(cls,ip, sessions):
@@ -238,19 +241,32 @@ class AppMenu(Stack):
 
     @classmethod
     def get_logs(cls, ip,session):
-        session = session[0] if isinstance(session, list) else session
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        w = json.load(open(os.path.join(SERVER_ROOT, ip)))
-        msg = Task.build_json('',op='check',session=session)
-        code,tag, msg = Comunication.SendOnce(w, msg, loop=loop)
-        return list(msg['reply'].keys())
+        if ip in IpMenu.infos:
+            session = session[0] if isinstance(session, list) else session
+            res = IpMenu.infos[ip]
+            logs = []
+            for log in res['ps']:
+                if log.startswith(session):
+                    # logs[log.split("/")[0]] = res['ps'][log]
+                    logs.append(log.split("/")[1])
+            return logs
+        else:
+            session = session[0] if isinstance(session, list) else session
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            w = json.load(open(os.path.join(SERVER_ROOT, ip)))
+            msg = Task.build_json('',op='check',session=session)
+            code,tag, msg = Comunication.SendOnce(w, msg, loop=loop)
+            return list(msg['reply'].keys())
 
 
 
 def main():
     confs = list(select(''))
-    pull_all_ini(confs)
+    # pull_all_ini(confs)
+    if os.path.exists("/tmp/tmp_session_info.json"):
+        with open("/tmp/tmp_session_info.json") as fp:
+            IpMenu.infos = json.load(fp)
 
     app = Application()
     ipm = IpMenu(id='ip')
