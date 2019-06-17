@@ -108,6 +108,10 @@ class IpMenu(CheckBox):
         data = Task.build_json('', op="sync-ini", session='config', content=content)
         Stack.run_background(Comunication.SendOnce, w,data)
 
+    @listener(10)
+    def on_enter(self):
+        self.attack()
+
     @classmethod
     def Refresh(cls, context):
         try:
@@ -135,8 +139,8 @@ class IpMenu(CheckBox):
         CheckBox.Cl()
         self.Redraw()
         log(apps, target)
-        confs = select(ips)
-        msgs = build_tasks(confs,targets=target.split(","),apps=apps,session=session)
+        confs = list(select(ips))
+        msgs = list(build_tasks(confs,targets=target.split(","),apps=apps,session=session))
         #AppMenu.run_background(self.run_task,target, [AppMenu.ip], apps, AppMenu.session, callback=self.callback)
         run_tasks(list(confs), list(msgs))
         self.show("wait .. sending .. task")
@@ -171,8 +175,6 @@ class AppMenu(Stack):
         if self.id == 'log':
             self.show("wait .. to pull log")
             self.show_log_file(self.get_now_text())
-        if self.id == 'sess':
-            self.attack()
 
     @listener('r')
     def refresh(self):
