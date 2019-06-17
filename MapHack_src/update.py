@@ -11,7 +11,7 @@ from MapHack_src.daemon import daemon_exec
 
 config = get_local_config()
 def update(port):
-    config = get_local_config()
+    
     for i in range(1):
         time.sleep(1)
         L('%d sec start update' % (1 -i))
@@ -20,7 +20,14 @@ def update(port):
     else:
 
         os.popen("git clone https://github.com/Qingluan/Map-Nodes.git /tmp/Map-Nodes && cd /tmp/Map-Nodes && pip3 install . -U ").read()
-    version = os.popen('cd /tmp/Map-Nodes/.git && cat FETCH_HEAD').read().split()[0]
+    try:
+        version = os.popen('cd /tmp/Map-Nodes/.git && cat logs/HEAD').read().split()[1]
+    except IndexError:
+        version = os.popen('cd /tmp/Map-Nodes/.git && cat logs/refs/heads/master').read().split()[1]
+
+    # if os.path.exists(os.path.expanduser('~/.maper.ini')):
+    #     os.remove(os.path.expanduser('~/.maper.ini'))
+    config = get_local_config()
     if version is None:
         version = time.asctime()
     L("new version:", version)

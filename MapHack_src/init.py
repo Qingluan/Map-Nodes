@@ -1,10 +1,12 @@
-import os,json
+import os,json, re
 import asyncssh
 import asyncio
+import logging
 from getpass import getpass
 from MapHack_src.log import L
 from MapHack_src.config import get_local_config
-
+from MapHack_src.selector import ip2geo
+from sqlite3 import Connection
 
 INIT_SCRIPT = """
 #!/bin/bash
@@ -38,9 +40,11 @@ if  [ $? -eq 0 ];then
         echo "Command python3 could be used already."
              hash pip3 2>/dev/null;
              if [ $? -eq  0 ];then
+                $INS install -y iputils-ping tree whois unzip python-pip
                 exit 0
              else
                 $INS install -y python3-pip python3-setuptools
+                $INS install -y iputils-ping tree whois unzip python-pip
                 exit 0
              fi
     fi
@@ -73,26 +77,49 @@ ln -s /usr/local/python3/bin/pip3 /usr/bin/pip3
 
 echo 'export PATH="$PATH:/usr/local/python3/bin"' >> ~/.bashrc
 
+$INS install -y iputils-ping tree whois unzip python-pip
 """
 
 INSTALL_SCRIPT = """
 cd /tmp/
+if [ -d /tmp/Map-Nodes ];then
+    rm -rf /tmp/Map-Nodes;
+fi
 git clone https://github.com/Qingluan/Map-Nodes.git
 cd Map-Nodes && pip3 install . -U
+if [ -f  $HOME/.maper.ini ];then
+    rm $HOME/.maper.ini;
+fi
+if [ -f /var/run/hack.pid ];then
+    kill -9 "$(cat /var/run/hack.pid)"
+    rm /var/run/hack.pid;
+fi
+if [ -f /var/run/hack-updater.pid ];then
+    kill -9 "$(cat /var/run/hack-updater.pid)";
+    rm /var/run/hack-updater.pid;
+fi
+ps aux | grep Seed | awk '{print $2}' |xargs kill -9;
+if [ -f $HOME/.mapper.json ];then
+    rm $HOME/.mapper.json;
+    rm $HOME/.maper.ini;
+fi
 """
 
 async def init_remote(host, password,port=22, user='root',conf=None):
     async with asyncssh.connect(host, port=int(port),username=user, password=password, client_keys=None,known_hosts=None ) as conn:
         result = await conn.run(INIT_SCRIPT)
-        if result.exit_status == 0:
-            result = await conn.run(INSTALL_SCRIPT)
-            async with conn.start_sftp_client() as sftp:
+        result = await conn.run(INSTALL_SCRIPT)
+        if result.exit_status != 0:
+            L('error:',result.stderr)
+
+        async with conn.start_sftp_client() as sftp:
                 await sftp.put(conf, '/root/.mapper.json')
                 result = await conn.run("Seed-node -c ~/.mapper.json -d start; Seed-node -c ~/.mapper.json -d start --updater")
-
+                if result.exit_status != 0:
+                    L(result.stderr)
         if result.exit_status == 0:
-            return "INIT ok"
-        return "failed"
+            return {'code':result.exit_status, "msg":"INIT ok", "ip":host}
+        return {'code':result.exit_status, "msg":"error", "ip":host}
 
 def init(host_str):
     user, host = host_str.split("@") if "@" in host_str else ["root", host_str]
@@ -123,3 +150,57 @@ def init(host_str):
 
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(init_remote(host,passwd, port=port,user=user, conf=CLIENT_CONFIG))
+
+async def wait_err(host, pwd, port, user, conf):
+    try:
+        return await asyncio.wait_for(init_remote(host, pwd, port, user, conf=conf), timeout=50)    
+    except asyncio.TimeoutError as e:
+        return {'ip':host, 'msg':'Timeout', 'code': -1}
+
+
+def init_from_db(db_file, country_or_ip):
+    db = Connection(db_file)
+    conf = get_local_config()
+    loop = asyncio.get_event_loop()
+    root = os.path.expanduser(conf['client']['server_dir'])
+    if not os.path.exists(root):
+        os.mkdir(root)
+    if os.path.exists(db_file):
+        servers = []
+        try:
+            if re.match(r'^\d{1,3}',country_or_ip):
+                servers = db.execute("select host,passwd,port,user from  Host where host like '%{ip}%'".format(ip=country_or_ip)).fetchall()
+                [L({'ip':i[0], 'country':ip2geo(i[0])}) for i in servers]
+            else:
+                servers = []
+                for i in db.execute("select host,passwd,port,user from  Host").fetchall():
+                    if country_or_ip in ip2geo(i[0]).lower():
+                        L({'ip':i[0], 'country':ip2geo(i[0])})
+                        servers.append(i)
+                
+        except Exception as e:
+            logging.error(e)
+            servers =  []
+        fs = []
+        
+        if input("sure to init ?:[y/other]").lower().strip() != 'y':
+            return [{"msg":"exit "}]
+
+        for server in servers:
+            host,pwd,port, user = server
+            config = {
+                'server':host,
+                'server_port':53000,
+                'password': os.urandom(6).hex(),
+                'method':'aes-256-cfb'
+            }
+            
+            CLIENT_CONFIG = os.path.join(root, host)
+            with open(CLIENT_CONFIG, 'w') as fp:
+                json.dump(config, fp)
+            L("--- to install ----")
+            fs.append(wait_err(host,pwd, port, user, conf=CLIENT_CONFIG))
+        return loop.run_until_complete(asyncio.gather(*fs))
+    else:
+        return []
+

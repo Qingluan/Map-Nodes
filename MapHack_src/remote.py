@@ -54,12 +54,14 @@ class Data:
         return tag + struct.pack('q',l) + data
     
     @classmethod
-    def reply(cls, msg, **kargs):
+    def reply(cls, msg,ip=None, **kargs):
         if isinstance(msg, bytes):
             msg = msg.decode()
         kargs.update({
             'reply':msg,
         })
+        if ip:
+            kargs['ip'] = ip
         return json.dumps(kargs).encode('utf-8')
 
 
@@ -108,7 +110,7 @@ class Comunication:
     async def reply(self, reply_msg, writer=None, **kargs):
         if not writer:
             writer = self._writer
-        data = Data.patch(self.auth_tag, Data.reply(reply_msg, **kargs))
+        data = Data.patch(self.auth_tag, Data.reply(reply_msg,ip=self._conf['server'], **kargs))
         en_data = self._crypt.encrypt(data)
         writer.write(en_data)
         writer.write_eof()
@@ -150,11 +152,13 @@ class Comunication:
             raise Exception("connect failed: %r"%auth_msg )
 
     @classmethod
-    def SendMul(cls, confs, msgs, loop=None):
+    def SendMul(cls, confs, msgs, loop=None, callback=None):
         fs = []
         for i,msg in enumerate(msgs):
             conf = confs[i % len(confs)]
-            fs.append(test_con(conf, msg,loop))
+            L({conf['server']:msg})
+            fs.append(test_con_callback(conf, msg,loop, callback=callback))
+
         fu = asyncio.gather(*fs)
         return loop.run_until_complete(fu)
 
@@ -188,27 +192,51 @@ def run_server(conf):
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
+
+
+
 async def test_con(conf, msg,loop, no_read=False):
-    
-    con, R, W = await Comunication.Con(conf, loop=loop)
+    try:    
+        con, R, W = await Comunication.Con(conf, loop=loop)
+    except ConnectionRefusedError:
+        return 1, '',{"ip":conf['server'] , "reply":conf['server'] + " can't connect", 'code':1}
     await con.reply("msg", **msg)
     if no_read:
-        return 0,None
+        return 0,None,{'msg':'no wait', 'ip':conf['server'], 'code':0}
     try:
-        code, t, data = await asyncio.wait_for(con.recive(), 12)
+        code, t, data = await asyncio.wait_for(con.recive(), 20)
+        if isinstance(data,dict):
+            data['ip'] = conf['server']
+            data['code'] = code
+        elif isinstance(data, str):
+            data = {'ip':conf['sever'], 'reply':data, 'code' :0 }
+        else:
+            L(type(data))
+            print(data)
         if not data:
             return code, t, 'no data recive you can check version by --op info'
         if 'reply' not in data:
             return code,t,data
+        if not data['reply']:
+            return code, t ,{'ip':conf['sever'], 'reply':'', 'code' :0 }
         if 'log' in data['reply']:
             try:
                 data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()
                 data['reply']['err_log'] = b64decode(data['reply']['err_log'].encode()).decode()
             except Exception as e:
+                data['code'] = 1
                 return code, t, data
         return code, t, data
     except asyncio.TimeoutError:
-        return 1, '', 'Timeout'
+        return 1, '', {'ip':conf['server'],'reply':'Timeout', 'code':1}
+
+async def test_con_callback(conf, msg,loop, no_read=False, callback=None):
+    if not callback:
+        return await test_con(conf, msg, loop, no_read=no_read)
+    else:
+        code,tag, res = await test_con(conf, msg, loop, no_read=no_read)
+        await(callback(code, tag,res))
+        return code,tag, res
 
 def test(conf):
     loop = asyncio.get_event_loop()

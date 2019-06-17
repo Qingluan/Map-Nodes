@@ -7,12 +7,14 @@ from MapHack_src.remote import  run_server
 from MapHack_src.remote import  Comunication
 from MapHack_src.task import Task
 from MapHack_src.log import L
-from MapHack_src.init import init
+from MapHack_src.init import init, init_from_db
 from MapHack_src.daemon import daemon_exec
 from MapHack_src.config import get_local_config, update
+from MapHack_src.selector import select, build_tasks,run_tasks, pull_all_ini
 
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
+parser.add_argument("-C","--conf-select", help="use config json  file ,format like ss. but support country or part of ip")
 parser.add_argument("--updater", default=False, action='store_true', help="start updater")
 parser.add_argument("-hh","--remote-help", default=False, action='store_true', help="show remote's help and app , must use -c [config.json]")
 parser.add_argument("-d","--daemon", default=None, help="aciton start/restart/stop  [--updater] ")
@@ -30,7 +32,8 @@ parser.add_argument("-i","--generate-sec-conf", default=False, action='store_tru
 parser.add_argument("--push-ini", default=None,  help="sync local ini to server.")
 parser.add_argument("--vi-ini", default=False,action='store_true',  help="change ini file in server.")
 parser.add_argument("--init", default=None,  help="init remote by ssh : --init root@server.com:10022")
-
+parser.add_argument("--init-from-db", default=None,  help="init remote by ssh : --init-from-db Japen")
+parser.add_argument("-V","--pull-ini" ,default=False,action='store_true',  help="pull all ini -> local by server_dirs")
 
 def editor(content):
     EDITOR = os.environ.get('EDITOR','vim') #that easy!
@@ -146,14 +149,15 @@ def main():
 
 
 
-    if args.app:
-        args.op = 'run'
+    if w and args.app:
+        # args.op = 'run'
         if len(args.app) == 1:
             target = ''
         else:
             target = args.app[1]
         app = args.app[0]
-        
+        if args.op.strip() == 'install':
+            args.session = 'config'
         data = Task.build_json(app, op=args.op, session=args.session, **{getattr(args,'as'): target, 'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
@@ -187,11 +191,14 @@ def main():
             sys.exit(1)
 
 
-    if args.op != 'run':
+    if w and args.op != 'run':
         if args.app:
             app = args.app[0]
         else:
             app = ''
+        if args.op.strip() == 'install':
+            args.session = 'config'
+        # L("session:",args.session)
         data = Task.build_json(app,op=args.op, session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
@@ -201,15 +208,17 @@ def main():
             L(res[2])
             sys.exit(1)
 
-
     if args.test:
+        args.op = 'test'
+    if w and args.test:
+
         data = Task.build_json("", session=args.session, op="test")
         res = Comunication.SendOnce(w, data)
         L(res[2]['reply'])
         sys.exit(0)
 
     if args.remote_help:
-        data = Task.build_json('',op='list', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
+        data = Task.build_json('',op='ls', session=args.session, **{'option':args.option, 'background':args.not_background, 'date': args.time})
         res = Comunication.SendOnce(w, data)
         try:
             L(res[2]['reply'])
@@ -223,6 +232,13 @@ def main():
         init(args.init)
         sys.exit(0)
 
+    if args.init_from_db:
+        db_file = os.path.expanduser("~/.config/seed/cache.db")
+        if os.path.exists(db_file):
+            res = init_from_db(db_file, args.init_from_db)
+            for r in res:
+                L(r)
+
     if args.tree:
         data = Task.build_json('tree',op='run', session=args.session, **{getattr(args,'as'): '/tmp/tasks','option':args.option, 'background':False, 'date': args.time})
         res = Comunication.SendOnce(w, data)
@@ -235,9 +251,39 @@ def main():
 
 
 
+    if args.conf_select:
+        confs = list(select(args.conf_select))
+    else:
+        sys.exit(0)
+        # L(confs)
 
+    if args.pull_ini:
+        confs = list(select(args.conf_select))
+        pull_all_ini(confs)
+        sys.exit(0)
 
+    if args.app:
+        app = [args.app[0]]
+        if len(args.app) > 1:
+            target = args.app[1:]
+        else:
+            target =[]
+    else:
+        app = []
+        target = []
 
+    msgs = list(build_tasks(confs, apps=app, op=args.op, targets=target,option=args.option, session=args.session,date=args.time, background=args.not_background, line=50))
+    for r in run_tasks(confs, msgs):
+        if 'tree' in r[2]:
+            L(r[2]['tree'])
+        else:
+            
+            if 'reply' in r[2] and isinstance(r[2]['reply'], dict):
+                L(r[2]['ip'],r[2]['reply'])
+            else:
+                L(r[2])
+
+    
 
 if __name__ == "__main__":
     main()

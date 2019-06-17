@@ -8,8 +8,29 @@ from concurrent.futures.thread import  ThreadPoolExecutor
 from MapHack_src.config import  get_local_config, update, test_ini, get_ini
 from MapHack_src.log import L
 from MapHack_src.update import update_and_start
+HELP = """
+optional arguments:
+  run -a [app target] -o [option]          run app [default]
+  install  -a [app] -s [session]           install app
 
+  ps -s [session]                          show task status in session
+  tree                                     show all log tree
+  log -a [app] -s [session]                show log content in session and app
+  cl -s [session]                          clear session log and session task record
+  cla                                      clear all session's log and task records
+  kill -a [app] -s [session]               kill task in session with running app , and get log
 
+  info                                     get info of server
+  sys-log                                  get server's log
+
+  upgrade                                  upgrade from git
+  test                                     test if config file is ok and get server's ifconfig
+  ls                                       list all app in config
+  
+  update                                   to install all app in list.
+  clean                                    clear all installed app .
+"""
+FINISHED_LOG_FILE = '/tmp/finished_pids'
 class TaskData:
     Datas = {}
     RDatas = {}
@@ -22,7 +43,6 @@ class TaskData:
         if pid in cls.Datas:
             return cls.Datas.get(pid)
         elif pid in cls.RDatas:
-            pid = os.path.basename(pid) if '/' in pid else pid
             return cls.RDatas[pid]
 
     @classmethod
@@ -39,7 +59,7 @@ class TaskData:
 
     @classmethod
     def set(cls, pid, log_file):
-        log_file = os.path.basename(log_file) if '/' in log_file else log_file
+        log_file = log_file
         cls.Datas[pid] = log_file
         cls.RDatas[log_file] = pid
 
@@ -48,21 +68,38 @@ class TaskData:
         return list(cls.RDatas.keys())
 
     @classmethod
+    def clear_session(cls, session):
+        ks = list(cls.RDatas.keys())
+        for log in ks:
+            if log.startswith(session):
+                cls.finish(log)
+
+    @classmethod
     def pids(cls):
         return list(cls.Datas.keys())
  
     @classmethod
-    def running(cls, pid):
+    def running(cls, pid, session_root='/tmp/tasks/config'):
+        
+        if isinstance(pid, str) and pid.endswith(".log"):
+            pid_f = os.path.join(session_root, pid[:-4] + ".pid" )
+            if os.path.exists(pid_f):
+                with open(pid_f) as fp:
+                    
+                    pid = int(fp.read().strip())
+                    L({pid_f: pid})
         if pid in cls.RDatas:
-            pid = os.path.basename(pid) if '/' in pid else pid
             pid = cls.get(pid)
+            L("test:runing:", pid)
         
         if pid and isinstance(pid, int):
             try:
                 os.kill(pid, 0)
             except ProcessLookupError:
+                L({pid: False}, 'not run')
                 return False
             else:
+                L({pid: True}, 'run')
                 return True
         return False
 
@@ -102,35 +139,68 @@ async def run_command(*args, stdout=None):
         result = stdout.decode().strip()
     return process.returncode, result
 
-async def run_shell(shell, stdout=None, background=False):
+async def run_shell(shell, stdout=None, background=False,use_script=False, finished_log_file=FINISHED_LOG_FILE):
     # Create subprocess
-    
+    # assert stdout is not None
     log_file = None
+    pid_file = None
+    if ';' in shell or '&&' in shell:
+        use_script = True
+    if use_script:
+        exe_script = "/tmp/script.sh"
+        if os.path.exists(exe_script):
+            exe_script = '/tmp/%s.sh' % (os.urandom(6).hex())
+
+        with open(exe_script, 'w') as fp:
+
+            fp.write("#!/bin/bash\n" + shell)
+            if stdout:
+                fp.write("\n echo %s >>  %s ; rm %s" %(stdout, finished_log_file, exe_script))
+
+        shell = "bash " + exe_script
+
     if background:
         if stdout:
             stderr = stdout + ".err"
+            pid_file = stdout[:-4] + ".pid"
+            # shell  += '; echo %s >> %s ' % (pid_file, finished_log_file)
             shell = shell + " >" + stdout + " 2> " + stderr
-
         shell = "nohup " + shell + " &"
         result = 'run in background: %s ' % stdout
         log_file = stdout
+    L({'run in backgroun':shell})
+
     process = await asyncio.create_subprocess_exec(
         'bash','-c',shell,
         # stdout must a pipe to be accessible as process.stdout
         stderr=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE)
-    # Wait for the subprocess to finish
+
     stdout, stderr = await process.communicate()
+    pid = process.pid
+    if background:
+        pid += 1
 
     # Progress
     if process.returncode != 0:
+        if pid_file:
+            with open(pid_file, 'w') as fp:
+                fp.write(str(process.pid))
         result = stderr.decode().strip()
         L("failed:", result)
     else:
+
         if log_file and background:
-            pid = process.pid
             TaskData.set(pid, log_file)
+            result = stderr.decode().strip()
+            if pid_file:
+                with open(pid_file, 'w') as fp:
+                    fp.write(str(process.pid + 1))
         result = stdout.decode().strip()
+        if not result:
+            if pid:
+                result = str(pid) + ":" + str(log_file)
+    # L(TaskData.RDatas)
     return process.returncode, result
 
 async def check_cmd(command):
@@ -172,6 +242,7 @@ class Task:
             L("may be centos , use : yum")
             res = "may be centos, use yum"
         apps = list(self.conf['app'].keys())
+        INSTALL = 'ps aux | grep "(apt-get|dpkg)" | grep -v "grep" | awk \'{print $2 }\' | xargs kill -9  ; dpkg --configure -a ;\nif [ -f /var/lib/dpkg/lock ];then rm /var/lib/dpkg/lock;fi \n if [ -f /var/cache/apt/archives/lock ];then rm /var/cache/apt/archives/lock ;fi ; apt-get update -y && apt --fix-broken install -y ; apt-get install -f -y ;  apt remove -y ; mv /var/lib/dpkg/info/polar-bookshelf.* /tmp \n'
         for app in apps:
             s = await check_cmd(app)
             if not s:
@@ -181,17 +252,36 @@ class Task:
                 if self._installer == 'yum':
                     install_str = install_str.replace("apt-get", self._installer)
 
-                D = datetime.datetime.now()
-                log_file = os.path.join(self.root_config, "-".join([app, str(D.year),str(D.month), str(D.day)]) + ".log")
-                code, res2 = await run_shell(install_str, background=True, stdout=log_file)
-                res += res2
-                # for code, res in res:
-                if code != 0:
-                    logging.error("install %s failed" % app)
-                    if app in os.listdir('/tmp/') and 'git' in install_str:
-                        await run_shell("rm -rf /tmp/" + app.strip())
-                    return  1, res + "\ninstall %s failed || %s" % (app, res)
-        return  0, res + '\ncheck ok'
+                # fs.append(run_f)
+                INSTALL += install_str + ";"
+                res += install_str + ";\n"
+        D = datetime.datetime.now()
+        log_file = os.path.join(self.root_config, "-".join(["install", str(D.year),str(D.month), str(D.day)]) + ".log")
+        code,res2 = await run_shell(INSTALL, background=True, stdout=log_file, use_script=True)
+        return  0, res + '\n---------------------\n' + res2
+
+    async def uninstall(self):
+        apps = list(self.conf['app'].keys())
+        CLEAR = ''
+        for app in apps:
+            
+            clear_str = ' apt remove -y %s ; pip3 uninstall -y %s ; pip uninstall -y %s ;' % (app, app, app)
+            install_str = self.__class__.conf['app'][app]
+            if 'ln -s' in install_str:
+                clear_str += '\n rm /usr/local/bin/%s;' % app
+            if os.path.exists("/opt/%s" % app):
+                clear_str += '\n rm -rf /opt/%s ;' % app 
+            CLEAR += clear_str  + "\n"
+
+        if os.path.exists(os.path.expanduser("~/.maper.ini")):
+            CLEAR += '\n rm %s' % os.path.expanduser("~/.maper.ini")
+
+        D = datetime.datetime.now()
+        log_file = os.path.join(self.root_config, "-".join(["uninstall", str(D.year),str(D.month), str(D.day)]) + ".log")
+        code,res = await run_shell(CLEAR, background=True, stdout=log_file, use_script=True)
+        if not res:
+            res = CLEAR
+        return code, res
 
     async def Command(self, line, stdout=None):
         lines = [i.split() for i in  line.split("&&")]
@@ -237,10 +327,16 @@ class Task:
         
     async def check_tasks(self):
         ks = list(self.load_tasks())
+        # finished_logs = ''
+        # if os.path.exists(FINISHED_LOG_FILE):
+            
+        #     with open(FINISHED_LOG_FILE) as fp:
+        #         finished_logs = fp.read()
         result = {}
         for log in ks:
-            f = TaskData.running(log)
+            f = TaskData.running(log, session_root=self.root)
             result[log] = f
+        # result['finished'] = finished_logs
         return 0,result
     
     async def check_info(self):
@@ -265,10 +361,10 @@ class Task:
 
         err_log_file = log_file + ".err"
         log = {}
-        running = TaskData.running(log_file)
+        running = TaskData.running(log_file, session_root=self.root)
         running_if_str = '\n[Running]' if running else '\n[Stop]'
-        if not running:
-            TaskData.finish(TaskData.get(log_file))
+        # if not running:
+        #     TaskData.finish(TaskData.get(log_file))
 
         if os.path.exists(log_file):
             #with open(log_file,'rb') as fp:
@@ -296,6 +392,85 @@ class Task:
                 r.append(res)
         return  c, r
     
+    async def get_sys_log(self):
+        log = {}
+        code = 0
+        line = 100
+        if os.path.exists("/var/log/hack.log"):
+            log_file = "/var/log/hack.log"
+            log['log'] = b64encode((await run_shell("tail -n %d %s " % (line,log_file) ))[1].encode())\
+                        .decode('utf-8','ignore')
+        else:
+            code += 1
+        if os.path.exists("/var/log/hack-updater.log"):
+            err_log = "/var/log/hack-updater.log"        
+            log['err_log'] = b64encode((await run_shell("tail -n %d %s " % (line,err_log) ))[1].encode())\
+                        .decode('utf-8','ignore')
+        else:
+            code += 10
+        # L(log)
+        return code, log
+    
+    async def clear_session(self):
+        if os.path.exists(self.root):
+            if ' ' in self.root or '..' in self.root or '~' in self.root:
+                code = 1
+                res = 'warring do not do this : rm -rf %s' % self.root
+                return code , res
+            if not self.root.startswith('/tmp'):
+                code = 1
+                res = 'warring do not do this : rm -rf %s' % self.root
+                return code , res
+            code, res = await run_shell('rm -rf %s' % self.root, background=False)
+        if self.root.endswith('config'):
+            os.mkdir(self.root)
+        if code == 0:
+            res = 'clear session : %s ' % self.root
+            TaskData.clear_session(self.root)
+        return code, res
+
+    async def clear_all(self):
+        TaskData.RDatas = {}
+        TaskData.Datas = {}
+        root = self.conf['base']['task_root']
+        code, res = await run_shell('rm -rf %s ' % root, background=False)
+        if code == 0:
+            code, res = await run_shell('mkdir %s ' % root, background=False)
+            code, res = await run_shell('mkdir %s/config ' % root, background=False)
+        if code == 0:
+            res = 'clear all session and log'
+        return code, res
+
+    async def clear_task(self, app, session, time):
+        assert isinstance(time, str)
+        log_file = '-'.join([app , time]) + ".log"
+        pid_file = '-'.join([app , time]) + ".pid"
+        log_file = os.path.join(self.root, log_file)
+        pid_file = os.path.join(self.root, pid_file)
+        err_log = log_file + ".err"
+        res = {}
+        code = 0
+        if os.path.exists(pid_file):
+            try:
+                pid = int(open(pid_file).read())
+                os.kill(pid, signal.SIGTERM)
+                res['shutdown'] = True
+            except Exception as e:
+                res['err'] = str(e)
+                res['shutdown'] = False
+                code = 1
+        if os.path.exists(log_file):
+            res['log'] = b64encode((await run_shell("cat %s " % (log_file) ))[1].encode())\
+                .decode('utf-8','ignore')
+        else:
+            code += 10
+        if os.path.exists(err_log):
+            res['err_log'] = b64encode((await run_shell("cat %s " % (err_log) ))[1].encode())\
+                .decode('utf-8','ignore')
+        else:
+            code += 100
+        return code, res
+
     async def run(self):
         op = self._data['op']
         L(self._data)
@@ -315,6 +490,8 @@ class Task:
             else:
                 D = date
             code,res = await self.get_app_log(app,line=line, date=D)        
+        elif op == 'clean':
+            code, res = await self.uninstall()
         elif op == 'install':
             app = self._data['app']
             try:
@@ -337,13 +514,29 @@ class Task:
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
+        elif op == 'cl':
+            code, res = await self.clear_session()
+        elif op == 'cla':    
+            code, res = await self.clear_all()
         elif op == 'update':
             code, res = await self.check()
-        elif op == 'check':
+        elif op == 'ps':
             code, res = await self.check_tasks()
         elif op == 'info':
             code, res = await self.check_info()
-        elif op == 'list':
+        elif op == 'sys-log':
+            code, res = await self.get_sys_log()
+        elif op == 'kill':
+            assert 'app' in self._data
+            assert 'session' in self._data
+            session = self._data['session']
+            app = self._data.get['app']
+            date = self._data.get('date')
+            if not date:
+                date = datetime.datetime.now()
+                date = "-".join([str(D.year),str(D.month), str(D.day)])
+            code, res = await self.clear_task(app, session, date)
+        elif op == 'ls':
             session = self._data['session']
             app = self._data.get('app','')
             log_dir = self.root
@@ -389,6 +582,7 @@ class Task:
             code = 0
         elif op == 'upgrade-local-fi':
             code, res = await run_shell("Seed-node -d stop --updater && Seed-node -d start --updater -c ~/.mapper.json")
+
         elif op == 'upgrade':
             data = Task.build_json('', op="upgrade-local", session=self._session)
             w = self._pconf
@@ -404,7 +598,9 @@ class Task:
             session = self._data['session']
             app = self._data['app']
             code, res = await run_shell(app)
-
+        else:
+            code = -1 
+            res = HELP
 
         return  code, res
     
