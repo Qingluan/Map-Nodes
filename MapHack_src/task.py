@@ -297,6 +297,25 @@ class Task:
         template = 'Not found in apps'
         try:
             template = self.conf['use'][app_name]
+            if '{http}' in template:
+                if 'ip' in kwargs:
+                    v = kwargs['ip']
+                    del kwargs['ip']
+                elif 'http' in kwargs:
+                    v = kwargs['http']
+                if not v.startswith('http'):
+                    v = 'http://' + v
+                    kwargs['http'] = v
+            else:
+                v = kwargs['ip']
+                if 'http://' in v:
+                    v = v.split("http://")[1]
+                elif 'https://' in v:
+                    v = v.split('https://')[1]
+                if 'http' in kwargs:
+                    del kwargs['http']
+                kwargs['ip'] = v
+
             cmd_str = template.format(**kwargs)
             D = datetime.datetime.now()
             log_file = os.path.join(self.root, "-".join([app_name, str(D.year),str(D.month), str(D.day)]) + ".log")

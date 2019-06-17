@@ -33,11 +33,11 @@ dnsrecon = apt-get install -y python-pip && pip install netaddr lxml dnspython ;
 [use]
 tree = tree {ip} {option}
 nmap = nmap -sS -A {ip} {option}
-dirsearch = dirsearch -u {ip} -e {option} --random-agents -s 2                               
-sqlmap = sqlmap -t {ip} --dbs  {option}
+dirsearch = dirsearch -u {http} -e {option} --random-agents -s 2                               
+sqlmap = sqlmap -t {http} --dbs  {option}
 ping = ping {ip} -c 5
 masscan = masscan {ip}  -p22-10000  --banners --rate 1000                                    
-dirbpy = dirbpy -o https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -u {ip}
+dirbpy = dirbpy -o https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -u {http}
 whatweb = whatweb  {option} {ip}
 dnsrecon = dnsrecon {option} -d {ip}
 whois = whois {ip} {option}

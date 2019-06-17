@@ -44,13 +44,14 @@ def ShowFi(context):
     if hasattr(context, 'Redraw'):
         context.Redraw()
 
-class IpMenu(Stack):
+class IpMenu(CheckBox):
     all_ips = None
     infos = {}
     sessions = None
     def __init__(self, *args, **kargs):
 
         ips = os.listdir(SERVER_ROOT)
+        ips = {i:True for i in ips}
         super().__init__(ips,*args, **kargs)
         self.__class__.all_ips = ips
 
@@ -84,12 +85,16 @@ class IpMenu(Stack):
 
     def update_when_cursor_change(self, item, ch):
         # if ch == 'l':
+        if '[' in item:
+            item = item.split("]",1)[1].strip()
         self.show_log(item)
 
     @listener('r')
     def refresh(self):
         self.__class__.Refresh(self)
         ip = self.get_now_text()
+        if '[' in ip:
+            ip = ip.split("]",1)[1].strip()
         log(IpMenu.infos)
         session = IpMenu.infos[ip]['session']
         AppMenu.from_res(ip, session)
@@ -119,6 +124,23 @@ class IpMenu(Stack):
             ShowFi(context)
         except Exception as e:
             log(str(e))
+
+    def attack(self):
+        ips = self.get_options()
+        target = self.get_input('set target split by "," ')
+        session = self.get_input('set session')
+        session = session.replace(' ', '_')
+        apps = CheckBox.Popup({i: False for i in AppMenu.apps},context=self, exit_key=10)
+        apps = CheckBox.last_popup.get_options()
+        CheckBox.Cl()
+        self.Redraw()
+        log(apps, target)
+        confs = select(ips)
+        msgs = build_tasks(confs,targets=target.split(","),apps=apps,session=session)
+        #AppMenu.run_background(self.run_task,target, [AppMenu.ip], apps, AppMenu.session, callback=self.callback)
+        run_tasks(list(confs), list(msgs))
+        self.show("wait .. sending .. task")
+
 
 
 class AppMenu(Stack):
@@ -156,16 +178,6 @@ class AppMenu(Stack):
     def refresh(self):
         IpMenu.Refresh(self)
 
-
-    def attack(self):
-       target = self.get_input('set target [ip/host/url]')
-       apps = CheckBox.Popup({i: False for i in AppMenu.apps},context=self, exit_key=10)
-       apps = CheckBox.last_popup.get_options()
-       CheckBox.Cl()
-       self.Redraw()
-       log(apps, target)
-       AppMenu.run_background(self.run_task,target, [AppMenu.ip], apps, AppMenu.session, callback=self.callback)
-       self.show("wait .. sending .. task")
 
     def callback(self, *msgs):
         self.show('\n'.join([str(i['reply']) for i in msgs]))
