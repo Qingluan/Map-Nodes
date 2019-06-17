@@ -15,6 +15,8 @@ FINISHED_LOG_FILE = /tmp/finished_pids
 [client]
 server_dir = ~/.server_dir
 server_ini = ~/.server_inis
+server_session = ~/.server_session
+server_log = ~/.server_logs
 
 [app]
 whois = apt-get install -y whois

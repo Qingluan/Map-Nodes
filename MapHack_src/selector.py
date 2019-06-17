@@ -14,6 +14,7 @@ from MapHack_src.log import L
 CONF = get_local_config()
 SERVER_DIR = os.path.expanduser(CONF['client']['server_dir'])
 SERVER_INI = os.path.expanduser(CONF['client']['server_ini'])
+SERVER_SESSION = os.path.expanduser(CONF['client']['server_session'])
 
 def ip2geo(ip):
     if not os.path.exists(os.path.expanduser('~/geo/GeoLite2-City.mmdb')):
@@ -66,6 +67,19 @@ def pull_all_ini(confs):
     asyncio.set_event_loop(loop)
     return Comunication.SendMul(confs, msgs, loop=loop, callback=save_ini)
 
+def pull_all_session(confs):
+    async def _save_session(code, tag, reply):
+        if code == 0:
+            ip = reply['ip']
+            with open(os.path.join(SERVER_SESSION, ip), 'w') as fp:
+                fp.write('\n'.join(reply['reply']))
+        else:
+            L(reply)
+    msg = Task.build_json('',op='session', session='config')
+    msgs = [msg.copy() for i in range(len(confs))]
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return Comunication.SendMul(confs, msgs, loop=loop, callback=_save_session)
 
 
 def build_tasks(confs, targets=[], apps=[], op='run',option='', session='default', background=True, **kargs):

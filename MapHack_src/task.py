@@ -344,9 +344,17 @@ class Task:
             version = 'X'
         else:
             version = self.conf['base']['version']
-        session = os.listdir(self.conf['base']['task_root'])
+        R = self.conf['base']['task_root']
+        sessions = os.listdir(R)
+        logs = {}
+        for session in sessions:
+            sess_root = os.path.join(R, session)
+            for log in os.listdir(sess_root):
+                logs[session+"/" + log] = TaskData.running(log, session_root=sess_root)
+
         apps = list(self.conf['use'].keys())
-        return 0, {'session':session, 'app': apps, 'version':version}
+
+        return 0, {'session':sessions, 'app': apps, 'version':version, 'ps':logs}
     
     async def get_app_log(self, app_name, date=None,pid=None, line=50):
         if not date:

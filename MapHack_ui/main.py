@@ -1,6 +1,7 @@
 import asyncio
 import curses
 import os
+import configparser
 from x_menu_src.menu import CheckBox, Application, Text,TextPanel, Menu, Stack
 from x_menu_src.event import listener
 from x_menu_src.log import log
@@ -27,31 +28,73 @@ def editor(content):
         tf.flush()
         call([EDITOR, tf.name])
 
+def _show(text, context):
+        time.sleep(0.03)
+        TextPanel.Cl()
+        if hasattr(context, 'Redraw'):
+            context.Redraw()
+        TextPanel.Popup(text, screen=context.screen,x=context.width//2, y=context.ix + 10, focus=False, width=len(text)+3)
+
+def Show( text, context):
+    Stack.run_background(_show, text, context)
+
+
+def ShowFi(context):
+    TextPanel.Cl()
+    if hasattr(context, 'Redraw'):
+        context.Redraw()
 
 class IpMenu(Stack):
-
+    all_ips = None
+    infos = {}
     def __init__(self, *args, **kargs):
 
         ips = os.listdir(SERVER_ROOT)
         super().__init__(ips,*args, **kargs)
+        self.__class__.all_ips = ips
 
-    def show_log(self, ip ):
+    def show_log(self, ip ,refresh=False):
+        if refresh:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            w = json.load(open(os.path.join(SERVER_ROOT, ip)))
+            log(w)
+            msg = Task.build_json('',op='info',session='config')
+            code,tag,msg = Comunication.SendOnce(w, msg, loop=loop)
+            log(msg)
+            sessions = msg['reply']['session']
+        else:
+            session_file = os.path.join(SESSION_ROOT, ip)
+            if os.path.exists(session_file):
+                with open(session_file) as fp:
+                    sessions = [i.strip() for i in fp if i.strip()]
+                    config = configparser.ConfigParser()
+                    filenames = os.path.join(SERVER_INI, ip)
+                    if os.path.exists(filenames):
+                        config.read(filenames)
+                        AppMenu.apps = list(config['use'].keys())
+                    else:
+                        AppMenu.apps = []
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        w = json.load(open(os.path.join(SERVER_ROOT, ip)))
-        log(w)
-        msg = Task.build_json('',op='info',session='config')
-        code,tag,msg = Comunication.SendOnce(w, msg, loop=loop)
-        log(msg)
-        sessions = msg['reply']['session']
-        AppMenu.apps = msg['reply']['app']
+            else:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                w = json.load(open(os.path.join(SERVER_ROOT, ip)))
+                msg = Task.build_json('',op='info',session='config')
+                code,tag,msg = Comunication.SendOnce(w, msg, loop=loop)
+                log(msg)
+                sessions = msg['reply']['session']
+                AppMenu.apps = msg['reply']['app']
         AppMenu.from_res(ip,sessions)
 
 
     def update_when_cursor_change(self, item, ch):
         if ch == 'l':
             self.show_log(item)
+
+    @listener('r')
+    def refresh(self):
+        self.__class__.Refresh(self)
 
     @listener('v')
     def vi_server_ini(self):
@@ -61,6 +104,18 @@ class IpMenu(Stack):
         content = editor(res[2]['reply'])
         data = Task.build_json('', op="sync-ini", session='config', content=content)
         Stack.run_background(Comunication.SendOnce, w,data)
+
+    @classmethod
+    def Refresh(cls, context):
+        ips = cls.all_ips if cls.all_ips else []
+        confs = select('.')
+        msgs = build_tasks(confs, op='info', session='config')
+        Show("wait ... sync all infos", context)
+        for code,tag, res in run_tasks(confs, msgs):
+            if code == 0:
+                ip = res['ip']
+                cls.infos[ip] = res
+        ShowFi(context)
 
 
 class AppMenu(Stack):
@@ -93,6 +148,11 @@ class AppMenu(Stack):
             self.show_log_file(self.get_now_text())
         if self.id == 'sess':
             self.attack()
+
+    @listener('r')
+    def refresh(self):
+        IpMenu.Refresh(self)
+
 
     def attack(self):
        target = self.get_input('set target [ip/host/url]')
