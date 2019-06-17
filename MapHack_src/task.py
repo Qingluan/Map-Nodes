@@ -471,6 +471,14 @@ class Task:
             code += 100
         return code, res
 
+    async def get_sessions(self):
+        r = self.conf['base']['task_root']
+        if r:
+            sessions = os.listdir()
+            return 0, sessions
+        else:
+            return 1, 'no task_root'
+
     async def run(self):
         op = self._data['op']
         L(self._data)
@@ -514,6 +522,8 @@ class Task:
                 if isinstance(res2, list):
                     res2 = '\n'.join(res2)
                 res = res2 + '\n' + res
+        elif op == 'session':
+            code, res = await self.get_sessions()
         elif op == 'cl':
             code, res = await self.clear_session()
         elif op == 'cla':    
