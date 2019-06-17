@@ -11,11 +11,11 @@ from sqlite3 import Connection
 INIT_SCRIPT = """
 #!/bin/bash
 #install python
-INS=apt
+INS=apt-get
 hash apt 2>/dev/null
 if [ $? -eq 0 ];then
     echo "apt is existed install apt-lib"
-    apt-get install -y libc6-dev gcc
+    apt-get install -y libc6-dev gcc python3-pip
     apt-get install -y make build-essential libssl-dev zlib1g-dev libreadline-dev libsqlite3-dev wget curl llvm
 else
     hash yum 2>/dev/null
@@ -23,14 +23,13 @@ else
         echo "yum is existed install yum-lib"
         yum -y install wget gcc make epel-release
         yum update -y
-        yum -y install  net-tools
+        yum -y install  net-tools python3-pip
         yum -y install zlib1g-dev bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
         yum -y install python36
         INS=yum
     fi
 fi
 
-$INS install -y python3-pip
 
 hash python3 2>/dev/null
 if  [ $? -eq 0 ];then
@@ -83,6 +82,13 @@ $INS install -y iputils-ping tree whois unzip python-pip
 """
 
 INSTALL_SCRIPT = """
+INS=apt-get
+hash apt 2>/dev/null
+if [ $? -eq 0 ];then
+    apt-get install -y python3-pip python3-setuptools
+else
+    yum install -y python3-pip python3*-devel
+fi
 cd /tmp/
 if [ -d /tmp/Map-Nodes ];then
     rm -rf /tmp/Map-Nodes;
@@ -110,15 +116,18 @@ fi
 async def init_remote(host, password,port=22, user='root',conf=None):
     async with asyncssh.connect(host, port=int(port),username=user, password=password, client_keys=None,known_hosts=None ) as conn:
         result = await conn.run(INIT_SCRIPT)
-        result = await conn.run(INSTALL_SCRIPT)
-        if result.exit_status != 0:
+        if result.exit_status == 0:
+           result = await conn.run(INSTALL_SCRIPT)
+           if result.exit_status != 0:
+                L('error:',result.stderr)
+        else:
             L('error:',result.stderr)
 
         async with conn.start_sftp_client() as sftp:
-                await sftp.put(conf, '/root/.mapper.json')
-                result = await conn.run("Seed-node -c ~/.mapper.json -d start; Seed-node -c ~/.mapper.json -d start --updater")
-                if result.exit_status != 0:
-                    L(result.stderr)
+            await sftp.put(conf, '/root/.mapper.json')
+            result = await conn.run("if [ -f /usr/local/python3/bin/Seed-node ];then /usr/local/python3/bin/Seed-node -c ~/.mapper.json -d start; /usr/local/python3/bin/Seed-node -c ~/.mapper.json -d start --updater; else Seed-node -c ~/.mapper.json -d start --updater ; Seed-node -c ~/.mapper.json -d start ; fi")
+            if result.exit_status != 0:
+                L(result.stderr)
         if result.exit_status == 0:
             return {'code':result.exit_status, "msg":"INIT ok", "ip":host}
         return {'code':result.exit_status, "msg":"error", "ip":host}
