@@ -474,7 +474,7 @@ class Task:
     async def get_sessions(self):
         r = self.conf['base']['task_root']
         if r:
-            sessions = os.listdir()
+            sessions = os.listdir(r)
             return 0, sessions
         else:
             return 1, 'no task_root'
