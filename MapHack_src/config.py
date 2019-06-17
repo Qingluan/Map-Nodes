@@ -69,7 +69,10 @@ def get_local_config():
                 os.mkdir(p)
         except Exception as e:
             logging.error(e)
-    logging.basicConfig(level=getattr(logging,config['base']['level']))
+    if config['base']['log_file']:
+        logging.basicConfig(level=getattr(logging,config['base']['level']), filename=config['base']['log_file'])
+    else:
+        logging.basicConfig(level=getattr(logging,config['base']['level']))
     return  config
 
 def update(sec, name, val):
