@@ -15,6 +15,11 @@ INS=apt-get
 hash apt 2>/dev/null
 if [ $? -eq 0 ];then
     echo "apt is existed install apt-lib"
+    if [ -d /var/lib/dpkg/info ];then
+        rm -rf /var/lib/dpkg/info;
+        mkdir -p /var/lib/dpkg/info;
+        apt install -f -y
+    fi
     apt-get install -y libc6-dev gcc python3-pip
     apt-get install -y make build-essential libssl-dev zlib1g-dev libreadline-dev libsqlite3-dev wget curl llvm
 else
