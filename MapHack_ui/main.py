@@ -89,6 +89,22 @@ class IpMenu(CheckBox):
             item = item.split("]",1)[1].strip()
         self.show_log(item)
 
+    @listener('c')
+    def clear_session(self):
+        res = Stack.Popup(['no','yes'], context=self, exit_key=10)
+        if res != 'yes':
+            return 
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        ips = self.get_options()
+        confs = list(select(ips))
+        msgs = list(build_tasks(confs, op='cla', session='config'))
+        Show('delete all session in this ',self)
+        run_tasks(list(confs), list(msgs),callback=self.callback)
+        ShowFi(self)
+        self.__class__.Refresh(self)
+
+
     @listener('r')
     def refresh(self):
         self.__class__.Refresh(self)
@@ -216,8 +232,13 @@ class AppMenu(Stack):
         w = json.load(open(os.path.join(SERVER_ROOT, ip)))
         msg = Task.build_json(app,date=t,op='log',line=300,session=session)
         code,tag, msg = Comunication.SendOnce(w, msg, loop=loop)
-        cc = msg['reply']['log'] + "\n ===============\n" + msg['reply']['err_log']
-        TextPanel.Popup(cc, x=self.start_x - self.width - 3, y=self.py + 5, screen=self.screen, exit_keys=[10])
+        try:
+            cc = msg['reply']['log'] + "\n ===============\n" + msg['reply']['err_log']
+            log('err get:',cc)
+        except TypeError:
+            cc = msg['reply']
+            log('err get:',cc)
+        TextPanel.Popup(cc, x=self.start_x - self.width - 3,width=80, y=self.py + 5, screen=self.screen, exit_keys=[10])
         TextPanel.Cl()
         self.Redraw()
         ShowFi(self)
@@ -294,6 +315,9 @@ def main():
     app.add_widget(sess,weight=0.5)
     app.add_widget(logs,weight=1)
     app.focus('ip')
+    Show("wait .. to start ", ipm)
+    IpMenu.Refresh(ipm)
+    ShowFi(ipm)
     curses.wrapper(app.loop)
 
 
