@@ -233,7 +233,7 @@ class AppMenu(Stack):
         msg = Task.build_json(app,date=t,op='log',line=300,session=session)
         code,tag, msg = Comunication.SendOnce(w, msg, loop=loop)
         try:
-            cc = msg['reply']['log'] + "\n ===============\n" + msg['reply']['err_log']
+            cc = msg['reply']['log'] + "\n ===============\n" + msg['reply'].get('err_log', "")
             log('err get:',cc)
         except (KeyError,TypeError) as e:
             cc = str(msg['reply'])
