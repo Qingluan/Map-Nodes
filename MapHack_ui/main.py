@@ -235,8 +235,8 @@ class AppMenu(Stack):
         try:
             cc = msg['reply']['log'] + "\n ===============\n" + msg['reply']['err_log']
             log('err get:',cc)
-        except TypeError:
-            cc = msg['reply']
+        except (KeyError,TypeError) as e:
+            cc = str(msg['reply'])
             log('err get:',cc)
         TextPanel.Popup(cc, x=self.start_x - self.width - 3,width=80, y=self.py + 5, screen=self.screen, exit_keys=[10])
         TextPanel.Cl()
