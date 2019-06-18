@@ -325,6 +325,7 @@ class Task:
             if not background:
                 try:
                     code , res = await asyncio.wait_for(run_shell(cmd_str, stdout=log_file), 12)
+                    with open(log_file, 'w') as fp:fp.write(res)
                 except asyncio.TimeoutError:
                     code = 2
                     res1 =  "timeout ... try : use background... but failed"

@@ -141,11 +141,13 @@ class IpMenu(CheckBox):
         log(apps, target)
         confs = list(select(ips))
         msgs = list(build_tasks(confs,targets=target.split(","),apps=apps,session=session))
-        #AppMenu.run_background(self.run_task,target, [AppMenu.ip], apps, AppMenu.session, callback=self.callback)
         Show("wait .. sending .. task", self)
         log(msgs)
-        #run_tasks(list(confs), list(msgs))
+        run_tasks(list(confs), list(msgs),callback=self.callback)
         ShowFi(self)
+
+    async def callback(self,code,tag,res):
+        log(code,res)
 
 
 
