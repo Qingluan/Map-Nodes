@@ -308,7 +308,8 @@ class Task:
                     v = kwargs['http']
                 if not v.startswith('http'):
                     v = 'http://' + v
-                    kwargs['http'] = v
+                    
+                kwargs['http'] = v
             else:
                 v = kwargs['ip']
                 if 'http://' in v:
