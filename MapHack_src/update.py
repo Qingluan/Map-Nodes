@@ -39,10 +39,11 @@ def update(port):
     res = call("Seed-node -d stop", shell=True)
     L("kill process")
     L('restart node in 0.5 sec' )
-    update_ini_from_git()
     time.sleep(0.5)
     restart_str = [os.path.expanduser(i) if i.startswith("~") else i for i in config['base']['restart'].split() ]
     res = call(restart_str)
+    update_ini_from_git()
+    L("update ini from git")
     L(res)
     return version
 
