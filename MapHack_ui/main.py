@@ -66,11 +66,9 @@ class IpMenu(CheckBox):
             log(msg)
             sessions = msg['reply']['session']
         else:
-            
             if ip in IpMenu.infos:
                 AppMenu.apps = IpMenu.infos[ip]['app']
                 sessions = IpMenu.infos[ip]['session']
-                
             else:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
@@ -127,6 +125,7 @@ class IpMenu(CheckBox):
     @listener('t')
     def on_attack(self):
         self.attack()
+
 
     @classmethod
     def Refresh(cls, context):
@@ -258,10 +257,11 @@ class AppMenu(Stack):
             sess.datas = AppMenu.sessions
             AppMenu.ip = ip
         if 'log' not in Application.widgets:
-            logs = cls(logs_datas)
+            logs = cls([i for i in logs_datas if i.endswith('log')])
             Application.instance.add_widget(logs, weight=1)
         else:
             logs = Application.get_widget_by_id('log')
+            logs_datas = [i for i in logs_datas if i.endswith('log')]
             if len(logs_datas) ==0:
                 logs_datas = ['no data']
             logs.datas = logs_datas

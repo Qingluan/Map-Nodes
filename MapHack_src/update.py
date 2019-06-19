@@ -3,6 +3,7 @@ import os, signal
 import time
 from MapHack_src.config import get_local_config
 from MapHack_src.config import update as update_conf
+from MapHack_src.config import update_ini_from_git
 
 from MapHack_src.log import L
 from subprocess import call
@@ -38,6 +39,7 @@ def update(port):
     res = call("Seed-node -d stop", shell=True)
     L("kill process")
     L('restart node in 0.5 sec' )
+    update_ini_from_git()
     time.sleep(0.5)
     restart_str = [os.path.expanduser(i) if i.startswith("~") else i for i in config['base']['restart'].split() ]
     res = call(restart_str)

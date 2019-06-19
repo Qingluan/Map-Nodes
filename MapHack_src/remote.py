@@ -218,7 +218,7 @@ async def test_con(conf, msg,loop, no_read=False):
         if 'reply' not in data:
             return code,t,data
         if not data['reply']:
-            return code, t ,{'ip':conf['sever'], 'reply':'', 'code' :0 }
+            return code, t ,{'ip':conf['server'], 'reply':'', 'code' :0 }
         if 'log' in data['reply']:
             try:
                 data['reply']['log'] = b64decode(data['reply']['log'].encode()).decode()

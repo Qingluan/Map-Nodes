@@ -1,9 +1,9 @@
 import os
 import logging
 import configparser
+import urllib.request as ur
 
 PATH = os.path.expanduser("~/.maper.ini")
-
 tmp = """
 [base]
 this = ~/.maper.ini
@@ -49,6 +49,19 @@ if os.path.exists(PATH):
 else:
     with open(PATH, 'w') as fp:
         fp.write(tmp)
+
+def update_ini_from_git():
+    url = 'https://raw.githubusercontent.com/Qingluan/Map-Nodes/master/template.ini'
+    try:
+        response = urllib.request.urlopen(url)
+        data = response.read()
+        if not data:
+            PATH = os.path.expanduser("~/.maper.ini")
+            with open(PATH, 'wb') as fp:
+                fp.write(data)
+                return True
+    except Exception as e:
+        return False
 
 def get_local_config():
 
