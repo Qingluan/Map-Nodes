@@ -512,7 +512,10 @@ class Task:
             return 1, 'no task_root'
 
     async def update_config(self):
-        code, res = await run_shell('wget -c -t 10 "https://raw.githubusercontent.com/Qingluan/Map-Nodes/master/template.ini" -O ~/.maper.ini', background=False)
+        code, res = await run_shell('wget -c -t 10 "https://raw.githubusercontent.com/Qingluan/Map-Nodes/master/template.ini" -O $HOME/.maper.ini', background=False)
+        self.conf = get_local_config()
+        if not res:
+            res = 'try to update maper.ini'
         return code,res
 
     async def run(self):
