@@ -511,6 +511,10 @@ class Task:
         else:
             return 1, 'no task_root'
 
+    async def update_config(self):
+        code, res = await run_shell('wget -c -t 10 "https://raw.githubusercontent.com/Qingluan/Map-Nodes/master/template.ini" -O ~/.maper.ini', background=False)
+        return code,res
+
     async def run(self):
         op = self._data['op']
         L(self._data)
@@ -566,6 +570,8 @@ class Task:
             code, res = await self.check_tasks()
         elif op == 'info':
             code, res = await self.check_info()
+        elif op == 'update-config':
+            code, res = await self.update_config()
         elif op == 'sys-log':
             code, res = await self.get_sys_log()
         elif op == 'kill':
