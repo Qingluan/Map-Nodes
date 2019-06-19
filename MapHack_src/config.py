@@ -57,8 +57,8 @@ def update_ini_from_git():
         data = response.read()
         if not data:
             PATH = os.path.expanduser("~/.maper.ini")
-            with open(PATH, 'wb') as fp:
-                fp.write(data)
+            with open(PATH, 'w') as fp:
+                fp.write(data.decode())
                 return True
     except Exception as e:
         return False
