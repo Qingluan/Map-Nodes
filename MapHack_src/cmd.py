@@ -10,7 +10,7 @@ from MapHack_src.log import L
 from MapHack_src.init import init, init_from_db
 from MapHack_src.daemon import daemon_exec
 from MapHack_src.config import get_local_config, update
-from MapHack_src.selector import select, build_tasks,run_tasks, pull_all_ini
+from MapHack_src.selector import select, build_tasks,run_tasks, pull_all_ini, push_all_ini
 
 parser = argparse.ArgumentParser(usage="a controll node in server, can do some thing by controller. all use async to implement.")
 parser.add_argument("-c","--conf", help="use config json  file ,format like ss.")
@@ -34,6 +34,7 @@ parser.add_argument("--vi-ini", default=False,action='store_true',  help="change
 parser.add_argument("--init", default=None,  help="init remote by ssh : --init root@server.com:10022")
 parser.add_argument("--init-from-db", default=None,  help="init remote by ssh : --init-from-db Japen")
 parser.add_argument("-V","--pull-ini" ,default=False,action='store_true',  help="pull all ini -> local by server_dirs")
+parser.add_argument("-Vi","--sync-ini" ,default=None, help="push ini to all ini -> local by server_dirs")
 
 def editor(content):
     EDITOR = os.environ.get('EDITOR','vim') #that easy!
@@ -256,6 +257,10 @@ def main():
     else:
         sys.exit(0)
         # L(confs)
+    if args.sync_ini and os.path.exists(args.sync_ini):
+        confs = list(select(args.conf_select))
+        push_all_ini(confs,args.sync_ini)
+        sys.exit(0)
 
     if args.pull_ini:
         confs = list(select(args.conf_select))

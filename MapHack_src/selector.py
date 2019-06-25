@@ -76,6 +76,16 @@ def pull_all_ini(confs):
     asyncio.set_event_loop(loop)
     return Comunication.SendMul(confs, msgs, loop=loop, callback=save_ini)
 
+def push_all_ini(confs, fname):
+    with open(fname) as fp:
+        content = fp.read()
+    msg = Task.build_json('',op='sync-ini', session='config',content=content)
+    msgs = [msg.copy() for i in range(len(confs))]
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return Comunication.SendMul(confs, msgs, loop=loop, callback=save_ini)
+
+
 def pull_all_session(confs):
     async def _save_session(code, tag, reply):
         if code == 0:
