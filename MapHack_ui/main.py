@@ -2,7 +2,7 @@ import asyncio
 import curses
 import os
 import configparser
-from x_menu_src.menu import CheckBox, Application, Text,TextPanel, Menu, Stack
+from x_menu_src.menu import CheckBox, Application, Text,TextPanel, Menu, Stack, ColorConfig
 from x_menu_src.event import listener
 from x_menu_src.log import log
 from MapHack_src.config import get_local_config
@@ -183,6 +183,21 @@ class AppMenu(Stack):
             if self.id == 'log':
                 self.show("wait .. to pull log")
                 self.show_log_file(item)
+
+    def draw_text(self,row,col, text, max_width=None, attrs=1, prefix='',prefix_attrs=None, mark=False):
+        if_run = mark
+        if AppMenu.session and AppMenu.ip:
+            log_file = AppMenu.session + "/"+ text.strip()
+            if not mark:
+                if_run = IpMenu.infos[AppMenu.ip]['ps'].get(log_file, False)
+                if if_run:
+                    attrs = ColorConfig.get('green')
+                log(log_file, if_run)
+            else:
+                if_run = mark
+
+        log(attrs)
+        super().draw_text(row, col, text, max_width=max_width, attrs=attrs, prefix=prefix,mark=if_run)
 
     def get_input(self, title):
         res = Text.Popup(content='', height=0,screen=self.screen, x=self.width // 4,y = self.ix+5, max_height=1, style='norm', title=title)

@@ -567,7 +567,7 @@ class Task:
             code, res = await self.get_sessions()
         elif op == 'cl':
             code, res = await self.clear_session()
-        elif op == 'cla':    
+        elif op == 'cla': 
             code, res = await self.clear_all()
         elif op == 'update':
             code, res = await self.check()
@@ -606,7 +606,11 @@ class Task:
             session = self._data['session']
             code, res = await self.Command("ifconfig")
             res = session + "|" + '\n'.join(res)
-        
+        elif op == "down":
+            session = self._data['session']
+            root = os.path.join(self.conf['task_root'], session)
+            res = await asyncio.get_event_loop().run_in_executor(self.__class__.Pocket, self.down_session_logs, root)
+            code = 0
         elif op == 'upgrade-local':
             TaskData.save(None,None)
             version = update_and_start(self._pconf['server_port'])
@@ -656,6 +660,19 @@ class Task:
             res = HELP
 
         return  code, res
+    
+    def down_session_logs(self, root):
+        res = {}
+        for f in os.listdir(root):
+            fname = os.path.join(root, f)
+            if fname.endswith("log") or fname.endswith("err"):
+                with open(fname) as fp:
+                    content = fp.read()
+                res[f] = content
+        return res
+
+
+
     
     def test_ini_file(self, content):
         f = "/tmp/%s" % os.urandom(8).hex() +".ini"
