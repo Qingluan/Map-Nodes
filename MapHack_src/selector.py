@@ -113,7 +113,7 @@ def build_tasks(confs, targets=[], apps=[], op='run',option='', session='default
                     yield Task.build_json(app, op=op, session=session,ip=target, backgroun=background, option=option, **kargs)
         else:
             for i in range(len(confs)):
-                yield Task.build_json(apps[0], op=op, session=session,ip=targets[0], backgroun=background, option=option, **kargs)
+                yield Task.build_json(apps[0], op=op, session=session,ip=targets[i% len(targets)], backgroun=background, option=option, **kargs)
     else:
         if apps:
             if len(apps) > 1:

@@ -271,6 +271,7 @@ def main():
         app = [args.app[0]]
         if len(args.app) > 1:
             target = args.app[1:]
+            L("targets:",target)
         else:
             target =[]
     else:
